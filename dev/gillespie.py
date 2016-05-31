@@ -6,6 +6,7 @@
 # - Heiko Reiger "Kinetic Monte Carlo" slides
 
 import numpy as np
+from matplotlib import pyplot as plt
 
 # Time to run
 T_MAX = 10
@@ -64,5 +65,6 @@ while t < T_MAX:
 
     print(N_x)
     population.append(N_x)
-    
-print(population)
+
+plt.plot(population)
+plt.show()
