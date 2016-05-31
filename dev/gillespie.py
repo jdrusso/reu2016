@@ -9,6 +9,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # Time to run
+# This blows up fast!
 T_MAX = 4
 
 # Initial population size
@@ -23,10 +24,13 @@ N_0 = 10
 # Reaction probability is set by the optional parameters mu1 and mu2.
 #
 def gillespie(mu1=.1, mu2=.9):
-    # Current time
-    t = 0
 
     ######## STEP 1 ########
+    # Initialization
+
+    # Set starting time
+    t = 0
+
     # Set up propensities for reactions
 
     mu = np.array([mu1, mu2])
@@ -75,7 +79,6 @@ def gillespie(mu1=.1, mu2=.9):
         results.append((t, N_x))
 
     print("Finished in %d steps." % len(results))
-
     return results
 
 # mu_list = [(.1,.9), (.2, .8), (.25, .75), (.3, .7), (.4, .6)]
