@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Python implementation of Gillespie algorithm
+# Proof-of-concept Python implementation of Gillespie algorithm
 #   for results dynamics simulation.
 # - https://people.maths.ox.ac.uk/erban/Education/StochReacDiff.pdf
 # - Heiko Reiger "Kinetic Monte Carlo" slides
@@ -9,75 +9,89 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # Time to run
-T_MAX = 2
+T_MAX = 4
 
-# Current time
-t = 0
-
-######## STEP 1 ########
-# Set up propensities for reactions
-# TODO: Currently must be set from smallest to largest
-
-# Reaction 1: X -> 0
-mu1 = .1
-# Reaction 2: X -> X + X
-mu2 = .9
-
-mu = np.array([mu1, mu2])
-
-# Initialize populations
+# Initial population size
 N_0 = 10
-N_x = N_0
-
-results = []
-while t < T_MAX:
-
-    # Execute Gillespie algorithm
-
-    ######## STEP 2 ########
-    # Calculate reaction probability distribution
-    a = N_x * mu/sum(mu)
 
 
-    ######## STEP 3 ########
-    # Choose mu according to probability distribution
-    r1 = np.random.rand()
+# Function to calculate the Gillespie algorithm over time T_MAX for
+#   two set reactions.
+# Reaction 1: X -> 0
+# Reaction 2: X -> X + X
+#
+# Reaction probability is set by the optional parameters mu1 and mu2.
+#
+def gillespie(mu1=.1, mu2=.9):
+    # Current time
+    t = 0
 
-    # Reaction 1
-    if r1*sum(a) < a[0]:
-        N_x -= 1
+    ######## STEP 1 ########
+    # Set up propensities for reactions
 
-    # Reaction 2
-    elif r1 * sum(a) < a[0] + a[1]:
-        N_x += 1
+    mu = np.array([mu1, mu2])
 
-    # Shouldn't do this
-    else:
-        print("error")
-        pass
+    # Initialize populations
+    N_x = N_0
 
-    ######## STEP 4 ########
-    # Choose tau according to an exponential
-    tau = - np.log(r1)/sum(a)
+    results = []
+    while t < T_MAX:
+
+        # Execute Gillespie algorithm
+
+        ######## STEP 2 ########
+        # Calculate reaction probability distribution
+        a = N_x * mu/sum(mu)
 
 
-    results.append((t, N_x))
-    # Increment timestep
-    t += tau
+        ######## STEPS 3 & 5########
+        # Choose mu according to probability distribution, and update
+        #   number of particles.
 
-    print(N_x)
+        r1 = np.random.rand()
 
-print("Finished in %d steps." % len(results))
+        # Reaction 1
+        if r1*sum(a) < a[0]:
+            N_x -= 1
+
+        # Reaction 2
+        elif r1 * sum(a) < a[0] + a[1]:
+            N_x += 1
+
+        # Shouldn't do this
+        else:
+            print("error")
+            pass
+
+
+        ######## STEP 4 ########
+        # Choose tau according to an exponential
+        tau = - np.log(r1)/sum(a)
+        # Increment timestep
+        t += tau
+
+
+        # Store results for output
+        results.append((t, N_x))
+
+    print("Finished in %d steps." % len(results))
+
+    return results
+
+# mu_list = [(.1,.9), (.2, .8), (.25, .75), (.3, .7), (.4, .6)]
+# output = [gillespie(*mu_list[i]) for i in range(5)]
+
+# Run Gillespie algorithm 5 times
+output = [gillespie(0, 1) for i in range(5)]
 
 # Plot data
-t = [x[0] for x in results]
-pop = np.array([x[1] for x in results])
-plt.plot(t, pop)
+for results in output:
+    t = [x[0] for x in results]
+    pop = np.array([x[1] for x in results])
+    plt.plot(t, pop, '--')
 
 # Generate theoretical model
 theoretical = N_0 * np.exp(t)
-plt.plot(t, theoretical)
-
-x = np.arange(0,10)
+plt.plot(t, theoretical, 'g', linewidth=4)
 
 plt.show()
