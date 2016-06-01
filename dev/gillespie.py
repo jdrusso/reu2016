@@ -97,4 +97,6 @@ for results in output:
 theoretical = N_0 * np.exp(t)
 plt.plot(t, theoretical, 'g', linewidth=4)
 
+plt.xlabel("Time")
+plt.ylabel("Population")
 plt.show()
