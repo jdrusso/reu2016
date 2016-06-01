@@ -86,13 +86,16 @@ def gillespie(mu1=.1, mu2=.9):
 # output = [gillespie(*mu_list[i]) for i in range(5)]
 
 # Run Gillespie algorithm 5 times
-output = [gillespie(0, 1) for i in range(5)]
+output = np.array([gillespie(0, 1) for i in range(5)])
 
 # Plot data
+# Iterate through each full run
 for results in output:
-    t = [x[0] for x in results]
+    t = np.array([x[0] for x in results])
     pop = np.array([x[1] for x in results])
     plt.plot(t, pop, '--')
+
+# TODO: Plot average
 
 # Generate theoretical model
 theoretical = N_0 * np.exp(t)
