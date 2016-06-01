@@ -45,8 +45,8 @@ def gillespie(mu1=.1, mu2=.9):
 
         ######## STEP 2 ########
         # Calculate reaction probability distribution
-        a = N_x * mu/sum(mu)
-
+        a = N_x * mu
+        a0 = sum(a)
 
         ######## STEPS 3 & 5########
         # Choose mu according to probability distribution, and update
@@ -55,11 +55,11 @@ def gillespie(mu1=.1, mu2=.9):
         r1 = np.random.rand()
 
         # Reaction 1
-        if r1*sum(a) < a[0]:
+        if r1*a0 < a[0]:
             N_x -= 1
 
         # Reaction 2
-        elif r1 * sum(a) < a[0] + a[1]:
+        elif r1 * a0 < a[0] + a[1]:
             N_x += 1
 
         # Shouldn't do this
