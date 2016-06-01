@@ -70,7 +70,8 @@ def gillespie(mu1=.1, mu2=.9):
 
         ######## STEP 4 ########
         # Choose tau according to an exponential
-        tau = - np.log(r1)/sum(a)
+        r2 = np.random.rand()
+        tau = - np.log(r2)/sum(a)
         # Increment timestep
         t += tau
 
