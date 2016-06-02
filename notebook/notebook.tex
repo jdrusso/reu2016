@@ -14,6 +14,17 @@
 \usepackage{enumitem}
 
 \newcommand{\obj}[1]{\textbf{Objective:} #1}
+\newcommand{\commit}[1]{\footnote{Git commit \texttt{#1}}}
+\newcommand{\reaction}[4][]{
+  \begin{equation}
+  #2 \overset{#4}{\rightarrow} #3
+  \end{equation}}
+\newcommand{\lreaction}[4]{
+  \begin{equation}
+  \label{#1}
+  #2 \overset{#4}{\rightarrow} #3
+  \end{equation}}
+
 \DeclareFixedFont{\textcap}{T1}{phv}{bx}{n}{1.5cm} % Font for main title: Helvetica 1.5 cm
 \DeclareFixedFont{\textaut}{T1}{phv}{bx}{n}{0.8cm} % Font for author name: Helvetica 0.8 cm
 %------------------------------------------------------------------------------
@@ -57,7 +68,7 @@
 \obj{Refine Gillespie algorithm proof-of-concept, and continue background research.}
 
 \experiment{gillespie}
-After reviewing my first version of my code\footnote{Git commit 4105445}, JJ had
+After reviewing my first version of my code\commit{4105445}, JJ had
 feedback on some changes to make, which I'll go through and fix one by one.
 
 \begin{itemize}
@@ -184,7 +195,76 @@ plasmid loss."
   \item We would like to start discussing a journal article every week to become
   more familiar with the literature surrounding this topic. To that end, I've
   been provided with a first article to read\cite{thattai}.
+
+  \item We talked a little about the background research I had done, and a little
+  more in depth about a few of the topics I'd read on. We talked about how
+  cells can lose plasmids without dying, releasing them back into their
+  environment.
+
+  \item Finally, we discussed next steps for simulation.
 \end{itemize}
+
+
+\subsection*{Next Steps}
+
+Currently\commit{5932c50}, the simulation only models the following two reactions
+
+\reaction{X}{\emptyset}{\mu_1}
+\reaction{X}{2X}{\mu_2}
+
+which correspond to death and reproduction respectively. However, in order to
+move forward, we'd like to expand the reactions considered.
+
+\subsubsection{Theory}
+
+We can simulate a bacterium transforming by taking in a plasmid from its
+environment with a new set of reactions
+
+\lreaction{xbirth}{X}{2X}{\mu_1}
+\lreaction{transform}{X}{Y}{\alpha}
+\reaction{Y}{2Y}{\mu_2}
+
+where X is a bacterium that has not absorbed any plasmids and Y is a plasmid
+carrier. Eqn. \ref{transform} represents transformation, the
+process by which a bacterium takes a free plasmid from its environment.
+
+From this, we can quickly see that as per the plasmid paradox mentioned before,
+$\mu_1 > \mu_2$. In addition, we can determine the cost to fitness of owning a
+plasmid to be
+\begin{equation}
+\frac{\mu_1}{\mu_2}
+\end{equation}.
+
+However, the ratio of X to Y will depend significantly on $\alpha$, the probability
+of transformation. We can rewrite the above reactions as differential equations
+
+\begin{equation}
+  \frac{dX}{dt} = \mu_1 \text{X} - \alpha \text{X}
+\end{equation}
+\begin{equation}
+  \frac{dY}{dt} = \mu_2 \text{Y} + \alpha \text{X}
+\end{equation}
+that describe the growth of each population. These have analytical results, but
+may be manipulated into a form that has an exact solution. I'll need to find this
+exact solution so I can verify my simulations are producing the proper output.
+
+Once I have the simulation working, I'd like to look at behaviors like how large
+$\alpha$ can get before Y dominates X.
+
+In addition, $\alpha$ doesn't have to be
+constant, and in fact should depend on plasmid concentration. I will make it into
+a function that depends on the plasmid concentration, P.
+
+I'd also like to map the transition of where X and Y dominate. I can do this by
+plotting $\frac{mu_1}{mu_2}$ vs $\alpha$, and then highlighting regions where
+each dominate. This will allow us to explore how X and Y change with $\alpha$.
+
+For now, we will use these 3 reactions and only vary $\alpha$ in order to try
+and find the $\frac{mu_1}{mu_2}$ vs $\alpha$ relation.
+
+In the future, we'd like to perform this simulation on a lattice to take spatial
+configuration of the bacteria into account, but for now we will assume a well-mixed
+environment.
 
 %------------------------------------------------------------------------------
 %	BIBLIOGRAPHY
