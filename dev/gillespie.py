@@ -10,10 +10,10 @@ from matplotlib import pyplot as plt
 
 # Time to run
 # This blows up fast!
-T_MAX = 4
+T_MAX = 5
 
 # Initial population size
-N_0 = 10
+N_0 = 25
 
 
 # Function to calculate the Gillespie algorithm over time T_MAX for
@@ -98,8 +98,10 @@ for results in output:
 # TODO: Plot average
 
 # Generate theoretical model
-theoretical = N_0 * np.exp(t)
-plt.plot(t, theoretical, 'g', linewidth=4)
+longest = max(l[-1][0] for l in output)
+t_t = np.linspace(0, longest, num=100,endpoint=True)
+theoretical = N_0 * np.exp(t_t)
+plt.plot(t_t, theoretical, 'g', linewidth=4)
 
 plt.xlabel("Time")
 plt.ylabel("Population")

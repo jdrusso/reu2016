@@ -1,0 +1,208 @@
+\documentclass[oneside]{labbook}
+
+\usepackage[bottom=10em]{geometry} % Reduces the whitespace at the bottom of the page so more text can fit
+\usepackage{amsmath} % For typesetting math
+\usepackage{graphicx} % Required for including images
+\usepackage{lipsum}
+\usepackage[english]{babel} % English language
+\usepackage[utf8]{inputenc} % Uses the utf8 input encoding
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage[osf]{mathpazo} % Palatino as the main font
+% \linespread{1.1}\selectfont % Palatino needs some extra spacing, here 5% extra
+\usepackage[nouppercase,headsepline]{scrpage2} % Provides headers and footers configuration
+\usepackage{booktabs,array} % Packages for tables
+\usepackage{enumitem}
+
+\newcommand{\obj}[1]{\textbf{Objective:} #1}
+\DeclareFixedFont{\textcap}{T1}{phv}{bx}{n}{1.5cm} % Font for main title: Helvetica 1.5 cm
+\DeclareFixedFont{\textaut}{T1}{phv}{bx}{n}{0.8cm} % Font for author name: Helvetica 0.8 cm
+%------------------------------------------------------------------------------
+%	DEFINITION OF EXPERIMENTS
+%------------------------------------------------------------------------------
+\newexperiment{gillespie}{Gillespie algorithm proof-of-concept}
+\newexperiment{conjug}{Plasmid conjugation simulation}
+%------------------------------------------------------------------------------
+
+
+\begin{document}
+%-------------------------------------------------------------
+% Title
+%-------------------------------------------------------------
+\title{
+  \textcap{Laboratory Notebook \\[1cm]
+  \textaut{Beginning 05-29-2016}}
+}
+
+\author{
+  \textaut{JD Russo}\\ \\
+  Bucknell University
+}
+
+\date{}
+
+\maketitle
+
+\printindex
+\tableofcontents
+% \newpage
+
+\pagestyle{scrheadings}
+%-------------------------------------------------------------
+
+
+%-------------------------------------------------------------
+% Begin journal entries
+%-------------------------------------------------------------
+\labday{June 1, 2016}
+\obj{Refine Gillespie algorithm proof-of-concept, and continue background research.}
+
+\experiment{gillespie}
+After reviewing my first version of my code\footnote{Git commit 4105445}, JJ had
+feedback on some changes to make, which I'll go through and fix one by one.
+
+\begin{itemize}
+  \item[$\Rightarrow$] $\tau$ should be generated with a different random number than the number used
+  for determining the reaction.
+  \item Changed $\tau$ to use a new, freshly generated number.
+
+  \item[$\Rightarrow$] An unnecessary division in the code when calculating the
+  propensity array can be removed for efficiency.
+  \item Removed the unnecessary division and timed execution with and without
+  using the \texttt{time} command. Too much variation in execution times to determine
+  any significant change.
+
+  \item[$\Rightarrow$] How would I modify the array of propensity functions if,
+  for example, reaction 2 were changed from $X \rightarrow 2X$ to $2X \rightarrow 3X$?
+  Reactions like this can be found in sexual reproduction and chemical reactions.
+  \item I need to look into this more. My first guess would be maybe I need to
+  square the propensity or probability of that reaction, since two reagents are involved.
+\end{itemize}
+
+Before I spend more time trying to answer the last point, I'm going to review some
+more background materials. I'll start by reading the Wikipedia page on antimicrobial
+resistance, and go from there.
+
+%-------------------------------------------------------------
+\labday{June 2, 2016}
+
+\obj{Continue background research on antimicrobial resistance and plasmids.}
+
+\section{Background}
+\subsection*{Antimicrobial Resistance}
+
+\begin {itemize}[label={--}]
+\item Broader topic than just bacteria and antibiotics
+\item 3 primary ways resistance arises in bacteria
+\begin{itemize}
+  \item Natural resistances
+  \item Genetic mutation
+  \item Acquiring resistance from another species \textbf{What we're studying with plasmids}
+\end{itemize}
+\item All classes of microbes develop resistances
+\item Present in all parts of the world
+\end{itemize}
+
+
+\subsection*{Mutation}
+\begin{itemize}
+  \item Low probability of mutating resistances
+  \item Some mutations can produce enzymes that render antibiotics inert
+  \item Some mutations can eliminate the targets of certain antibiotics
+\end{itemize}
+
+
+\subsection*{Acquired Resistances}
+\begin{itemize}
+  \item \textit{Conjugation} is passing genetic material from one bacteria to another via
+  \textbf{plasmids} and \textbf{transposons}. This requires physical contact
+  \item \textit{Transformation} is when a bacteria absorbs genetic material from
+  a free plasmid in its environment
+  \item Viruses can also take genetic material from a bacterium and inject it into other bacteria
+  \item \textbf{Horizontal} transfer is sharing genetic material with other bacteria
+  \item \textbf{Vertical} transfer is sharing genetic material through reproduction with daughter cells
+  \item \textbf{Transposons} are small amounts of DNA that can move between genetic
+  elements like chromosomes and plasmids.
+\end{itemize}
+
+
+\subsection*{Plasmids}
+\begin{itemize}
+  \item Cannot reproduce on their own, without a host bacterium
+  \item Widely distributed
+  \item Bacteria can hold many plasmids per cell
+  \item Plasmid genomes have \textit{core} genes for transmission and replication
+  and \textit{accessory} genes that encode traits.
+\end{itemize}
+
+
+\subsection*{The Plasmid Paradox}
+"Plasmids impose a fitness cost on their bacterial hosts that generates selection
+against plasmid carriage under conditions in which plasmid genes do not provide
+any benefit to the host ... The great irony of the plasmid paradox is that exposure
+to conditions that select for plasmid-carried genes can also ultimately lead to
+plasmid loss."
+\begin{itemize}
+  \item Recurrent horizontal transfer
+  \item Genes encoded
+\end{itemize}
+
+\section*{Skype with Prof. Dong}
+\begin{itemize}
+  \item For the $2X \rightarrow 3X$ reaction mentioned in yesterday's entry, the
+  propensity array element for the new reaction must be multiplied by two. Since
+  it involves two reagents now, it's twice as probable. \textit{(Why doesn't this
+  make it half as probable?)}
+
+  \item The theoretical line should follow the solution to the ODE, which in the
+  simplest case is just the exponential.
+
+  This should be plotted on a semi-log
+  plot (meaning logarithmic y-axis) since it's an exponential function. The slope
+  of this line will be the exponent.
+
+  \item It would be helpful to average the five independent Gillespie algorithm
+  runs that are executed, and compare the average line to the theoretical line.
+
+  However, the Gillespie algorithm has an element of randomness in the time steps
+  it takes. Therefore, between separate runs, times of datapoints will not line up.
+  Without having points with the same time, we can't meaningfully average them.
+  We're not sure what the answer is to this yet, but we're putting it on hold for now.
+
+  We also discussed the central limit theorem, and how if you increase the population
+  size in the simulation, the simulation runs become far closer to the theoretical
+  model. As the population grows, the standard deviation of the mean is reduced,
+  and the Gaussian that describes the distribution of the runs gets narrower.
+
+  In biology, the opposite is often the case, where very small populations lead
+  to wide Gaussians, and much noisier data. For example, in our research, if a parent
+  cell has 5 plasmids and produces two daughters, it's likely that the plasmids
+  will be distributed 3 to one, 2 to the other. However, that's just likely, not
+  guaranteed. If this doesn't happen, and if for example one daughter receives all
+  5 and the other none, this small initial difference can hugely affect the system
+  as it grows.
+
+  \item We would like to start discussing a journal article every week to become
+  more familiar with the literature surrounding this topic. To that end, I've
+  been provided with a first article to read\cite{thattai}.
+\end{itemize}
+
+%------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%------------------------------------------------------------------------------
+\begin{thebibliography}{2}
+% \bibitem{lamport94}
+% Leslie Lamport,
+% \emph{\LaTeX: A Document Preparation System}.
+% Addison Wesley, Massachusetts,
+% 2nd Edition,
+% 1994.
+\bibitem{thattai}
+Mukund Thattai, Alexander van Oudenaarden
+\emph{Intrinsic noise in gene regulatory networks}
+PNAS vol. 98 no. 15
+2001.
+http://www.pnas.orgycgiydoiy10.1073ypnas.151588598/
+\end{thebibliography}
+%------------------------------------------------------------------------------
+
+\end{document}
