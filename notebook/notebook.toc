@@ -1,5 +1,0 @@
-\select@language {english}
-\contentsline {chapter}{\nonumberline June 1, 2016}{3}
-\contentsline {experiment}{\numberline {1}Gillespie algorithm proof-of-concept}{3}
-\contentsline {chapter}{\nonumberline June 2, 2016}{4}
-\contentsline {section}{\numberline {0.1}Background}{4}
