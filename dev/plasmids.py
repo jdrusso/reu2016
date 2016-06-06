@@ -93,7 +93,7 @@ def gillespie(mu1=.7, mu2=.4, alpha=.2, t_max=T_MAX):
         # Store results for output
         results.append([t, N_x, N_y])
 
-    print("Finished in %d steps." % len(results))
+    # print("Finished in %d steps." % len(results))
 
     final = [alpha, mu1/mu2, N_x, N_y]
     return results, final
@@ -186,7 +186,7 @@ def plotData(x, y, z, RESOLUTION=64):
 
     plt.show()
 
-def animate(i, X, Y, Z, ax, z):
+def animate(i, X, Y, Z, ax, z, t_max):
     # Clean up axes - NEED THIS!
     ax.cla()
 
@@ -203,7 +203,7 @@ def animate(i, X, Y, Z, ax, z):
 
     levels = np.linspace(0, 1, 50)
     cont = ax.contourf(X, Y, Z, levels=levels)
-    plt.title("Step %d" % i)
+    plt.title("T = %.2f" % ((float(i) / t_max[1]) * t_max[0]))
     plt.xlabel('alpha')
     plt.ylabel('mu1/mu2')
 
@@ -221,7 +221,9 @@ def animateContour(m2=[.1, .7], a=[.1, .9], mu1=.8, RESOLUTION=128):
     ax = plt.axes(xlim=tuple(a), ylim=tuple(m2))
 
     # Generate a range of times
-    times = np.linspace(0.1,3.,25)
+    # Set max time, and number of steps
+    t_max = (3., 100.)
+    times = np.linspace(0.1, t_max[0], t_max[1])
 
 
     # Generate data
@@ -234,7 +236,7 @@ def animateContour(m2=[.1, .7], a=[.1, .9], mu1=.8, RESOLUTION=128):
 
     # Generate animation
     anim = animation.FuncAnimation(fig, animate, frames=len(times), interval=150,
-                fargs=(X, Y, Z, ax, True), blit=False)
+                fargs=(X, Y, Z, ax, True, t_max), blit=False)
 
     # Write animation to MP4 using ffmpeg
     writer = animation.writers['ffmpeg']()
@@ -243,7 +245,7 @@ def animateContour(m2=[.1, .7], a=[.1, .9], mu1=.8, RESOLUTION=128):
     return anim
 
 def main():
-    res = 128
+    res = 64
 
     # x, y, z = mu_vs_alpha(m2=[.3, .7], a=[.2, .7], mu1=.8, RESOLUTION=res)
     # plotData(x, y, z, RESOLUTION=res)
