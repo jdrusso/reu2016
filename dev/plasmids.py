@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
 # Proof-of-concept Python implementation of Gillespie algorithm
 #   for results dynamics simulation.
@@ -6,15 +6,24 @@
 # - Heiko Reiger "Kinetic Monte Carlo" slides
 
 import numpy as np
+import scipy.interpolate
+
+import matplotlib
+# matplotlib.use("Agg")
 from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+import matplotlib.animation as animation
+
 from itertools import cycle
+import types
 
 # Time to run
 # This blows up fast!
-T_MAX = 5
+T_MAX = 1
 
 # Initial population size
-N_0 = 1000
+N_0 = 10
 
 
 # Function to calculate the Gillespie algorithm over time T_MAX for
@@ -25,24 +34,20 @@ N_0 = 1000
 #
 # Reaction probability is set by the optional parameters mu1 and mu2.
 #
-def gillespie(mu1=.7, mu2=.5, alpha=.9):
+def gillespie(mu1=.7, mu2=.4, alpha=.2, t_max=T_MAX):
 
     ######## STEP 1 ########
     # Initialization
 
     # Set starting time
-    t = 0
-
-    # Set up propensities for reactions
-
-    # mu = np.array([mu1, mu2, alpha])
+    t = 0.
 
     # Initialize populations
     N_x = N_0
-    N_y = 0
+    N_y = 0.
 
     results = []
-    while t < T_MAX:
+    while t < t_max:
 
         # Execute Gillespie algorithm
 
@@ -60,18 +65,18 @@ def gillespie(mu1=.7, mu2=.5, alpha=.9):
         # Reaction 1
         if r1*a0 < a[0]:
 
-            N_x -= 1
+            N_x -= 1.
 
         # Reaction 2
         elif r1 * a0 < a[0] + a[1]:
 
-            N_x -= 1
-            N_y += 1
+            N_x -= 1.
+            N_y += 1.
 
         # Reaction 3
         elif r1 * a0 < a[0] + a[1] + a[2]:
 
-            N_y += 1
+            N_y += 1.
 
         # Shouldn't do this
         else:
@@ -87,38 +92,175 @@ def gillespie(mu1=.7, mu2=.5, alpha=.9):
 
 
         # Store results for output
-        results.append((t, N_x, N_y))
+        results.append([t, N_x, N_y])
 
     print("Finished in %d steps." % len(results))
-    return results
 
-# mu_list = [(.1,.9), (.2, .8), (.25, .75), (.3, .7), (.4, .6)]
-# output = [gillespie(*mu_list[i]) for i in range(5)]
+    final = [alpha, mu1/mu2, N_x, N_y]
+    return results, final
 
-# Run Gillespie algorithm 5 times
-output = np.array([gillespie() for i in range(3)])
 
-# Plot data
-colors = "bgrcm"
-i = 0
-# Iterate through each full run
-for results in output:
-    t = np.array([x[0] for x in results])
-    pop_X = np.array([x[1] for x in results])
-    pop_Y = np.array([x[2] for x in results])
-    plt.plot(t, pop_X, '--', color=colors[i])
-    plt.plot(t, pop_Y, '-.', color=colors[i])
-    i+=1
 
-# TODO: Plot average
+# RESOLUTION**2 = Number of datapoints
+# m2 = Minimum and maximum mu2 values
+# a  = Minimum and maximum alpha values
+# mu1= mu1 value - fixed!
+def mu_vs_alpha(RESOLUTION=64, m2=[.3, .7], a=[.2, .7], mu1=.8, t_max=T_MAX):
 
-# Generate theoretical model
-longest = max(l[-1][0] for l in output)
-t_t = np.linspace(0, longest, num=100,endpoint=True)
-theoretical = N_0 * np.exp(t_t)
-# plt.plot(t_t, theoretical, 'g', linewidth=4)
+    results = []
 
-plt.xlabel("Time")
-plt.ylabel("Population")
-plt.yscale('log')
-plt.show()
+    # Generate data by running Gillespie algorithm function for each pair of
+    #   mu1/mu2 and alpha values.
+    c = 0
+    for a in np.linspace(a[0], a[1], RESOLUTION):
+        for mu2 in np.linspace(m2[0], m2[1], RESOLUTION):
+
+            temp = gillespie(mu1, mu2, a, t_max=t_max)
+            # Store [alpha, mu1/mu2, N_x, N_y] in results
+            results.append(temp[1])
+
+            c += 1
+            print("Finished %d of %d" % (c, RESOLUTION**2))
+
+    temp = [list(t) for t in zip(*results)]
+
+    x = temp[0]
+    y = temp[1]
+    z = []
+
+    for v in range(len(x)):
+        if temp[2][v] == 0:
+            z += [0.]
+            continue
+        #Set Z to be the percentage of non-carrier bacteria
+        z += [float(temp[2][v]) / float(temp[2][v]+temp[3][v])]
+
+    return x, y, z
+
+def plotData(x, y, z, RESOLUTION=64):
+    # ###############
+    # # Code for surface plot
+    # #Reshape data for plotting
+    # cols = np.unique(x).shape[0]
+    # X = np.array(x).reshape(-1, cols)
+    # Y = np.array(y).reshape(-1, cols)
+    # Z = np.array(z).reshape(-1, cols)
+    #
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+    # ax.plot_surface(X, Y, Z, rstride=1, cstride=1, vmin=min(z),vmax=max(z), cmap=cm.coolwarm)
+    #
+    # ###############
+
+    #############
+    # Simpler contour plot
+    # X, Y = np.meshgrid(x, y)
+    cols = np.unique(x).shape[0]
+    X = np.array(x).reshape(-1, cols)
+    Y = np.array(y).reshape(-1, cols)
+    Z = np.array(z).reshape(-1, cols)
+
+    levels = np.linspace(min(z), max(z), 50)
+    cs = plt.contourf(X, Y, Z, levels=levels)
+    plt.colorbar(cs)
+
+    #############
+
+    # #########
+    # # code for contour plot
+    # print("Beginning contour plotting...")
+    # xi, yi = np.linspace(min(x), max(x), RESOLUTION), np.linspace(min(y), max(y), RESOLUTION)
+    # xi, yi = np.meshgrid(xi, yi)
+    #
+    # print("Interpolating...")
+    # rbf = scipy.interpolate.Rbf(x, y, z, function='linear')
+    # zi = rbf(xi, yi)
+    #
+    # print("Plotting...")
+    # plt.imshow(zi, vmin=min(z), vmax=max(z), origin='lower',
+    #            extent=[min(x), max(x), min(y), max(y)], aspect="auto")
+    # # plt.scatter(x, y, c=z)
+    # plt.colorbar(label="Percentage of X")
+    # plt.xlabel("alpha")
+    # plt.ylabel("mu1 / mu2")
+    # #########
+
+    plt.show()
+
+def animate(i, X, Y, Z):
+    x = X[i]
+    y = Y[i]
+    z = Z[i]
+
+    cols = np.unique(x).shape[0]
+    X = np.array(x).reshape(-1, cols)
+    Y = np.array(y).reshape(-1, cols)
+    Z = np.array(z).reshape(-1, cols)
+
+    print(Z)
+
+    levels = np.linspace(0, 1, 50)
+    cont = plt.contourf(X, Y, Z, levels=levels)
+    plt.title("Step %d" % i)
+    # plt.show()
+    # plt.colorbar(cont)
+
+    return cont
+
+
+# Function to draw and animate a contour plot of population vs
+def animateContour(m2=[.1, .7], a=[.1, .9], mu1=.8, RESOLUTION=64):
+
+    fig = plt.figure()
+    ax = plt.axes(xlim=tuple(a), ylim=tuple(m2))
+
+    plt.xlabel('alpha')
+    plt.ylabel('mu1/mu2')
+
+    times = np.linspace(0.1,3.,10)
+
+    X, Y, Z = [], [], []
+
+    # Generate data
+    for time in times:
+        x, y, z = mu_vs_alpha(t_max = time, RESOLUTION=RESOLUTION)
+        X += [x]
+        Y += [y]
+        Z += [z]
+
+
+    # DIY animation, since matplotlib's isn't working
+    plt.ion()
+    plt.figure(1)
+
+    images = []
+    for i in range(len(times)):
+        fig.clf()
+        cont = animate(i, X, Y, Z)
+        plt.colorbar(label="Percentage of X")
+        plt.xlabel("alpha")
+        plt.ylabel("mu1 / mu2")
+        plt.draw()
+
+        #################################################################
+        ## Bug fix for Quad Contour set not having the attributes
+        ## 'set_visible' and 'set_animated'
+        def setvisible(self,vis):
+            for c in self.collections: c.set_visible(vis)
+        def setanimated(self,ani):
+            for c in self.collections: c.set_animated(ani)
+        cont.set_visible = types.MethodType(setvisible,cont)
+        cont.set_animated = types.MethodType(setanimated,cont)
+        cont.axes = plt.gca()
+        cont.figure = fig
+        ####################################################################
+
+        images.append((cont,))
+
+def main():
+    res = 32
+
+    animateContour(m2=[.3, .7], a=[.2, .7], mu1=.8, RESOLUTION=res)
+
+if __name__ == "__main__":
+    main()
