@@ -236,8 +236,6 @@ def animateContour(m2=[.1, .7], a=[.1, .9], mu1=.8, RESOLUTION=128):
     anim = animation.FuncAnimation(fig, animate, frames=len(times), interval=150,
                 fargs=(X, Y, Z, ax, True), blit=False)
 
-    # plt.colorbar(label="X percentage in population")
-
     # Write animation to MP4 using ffmpeg
     writer = animation.writers['ffmpeg']()
     anim.save("animation.mp4", writer=writer)
@@ -245,7 +243,7 @@ def animateContour(m2=[.1, .7], a=[.1, .9], mu1=.8, RESOLUTION=128):
     return anim
 
 def main():
-    res = 32
+    res = 128
 
     # x, y, z = mu_vs_alpha(m2=[.3, .7], a=[.2, .7], mu1=.8, RESOLUTION=res)
     # plotData(x, y, z, RESOLUTION=res)
