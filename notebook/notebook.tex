@@ -114,7 +114,7 @@ resistance, and go from there.
 \end{itemize}
 
 
-\subsection*{Mutation}
+\subsection*{mutation}
 \begin{itemize}
   \item Low probability of mutating resistances
   \item Some mutations can produce enzymes that render antibiotics inert
@@ -256,15 +256,90 @@ constant, and in fact should depend on plasmid concentration. I will make it int
 a function that depends on the plasmid concentration, P.
 
 I'd also like to map the transition of where X and Y dominate. I can do this by
-plotting $\frac{mu_1}{mu_2}$ vs $\alpha$, and then highlighting regions where
+plotting $\frac{\mu_1}{\mu_2}$ vs $\alpha$, and then highlighting regions where
 each dominate. This will allow us to explore how X and Y change with $\alpha$.
 
 For now, we will use these 3 reactions and only vary $\alpha$ in order to try
-and find the $\frac{mu_1}{mu_2}$ vs $\alpha$ relation.
+and find the $\frac{\mu_1}{\mu_2}$ vs $\alpha$ relation.
 
 In the future, we'd like to perform this simulation on a lattice to take spatial
 configuration of the bacteria into account, but for now we will assume a well-mixed
 environment.
+
+\labday{June 3, 2016}
+
+\obj{Prepare short talk for progress talks today, and begin work on second
+simulation.}
+
+Every Friday we're asked to give a 3-4 minute presentation to the other summer
+research students. I've spent some time putting together my basic talking points,
+which can be found in \texttt{summer2016/talks/June\_3.pdf}.
+
+\experiment{conjug}
+I'm also starting work on a simulation as mentioned in yesterday's entry, where
+I replace the initial two (birth and death) reactions with three, bacteria
+reproduction, transformation, and plasmid carrier reproduction.
+
+I've duplicated the code from the initial simulation to
+ \texttt{summer2016/dev/plasmids.py}, where I'll begin modifying it.
+
+I've redefined the reactions, and made the program keep track of X and Y
+(bacteria and carrier) populations separately.
+
+I can plot the results of this simulation, and see that if I increase alpha, the
+point where the X and Y populations cross shifts to the left.
+
+
+\labday{June 6, 2016}
+
+\obj{Expand plasmid carrier population simulation to run through our parameter
+space and meaningfully plot results.}
+
+\experiment{conjug}
+Our goal with the plasmid carrier population simulation is to be able to make a
+plot of $\frac{\mu_1}{\mu_2}$ vs $\alpha$. I think it would make sense to show
+this as a contour plot. I can generate a large number of datapoints throughout
+the plot, and then plot them indicating whether the X or Y population dominated
+(maybe blue-red spectrum?).
+
+Alternatively, I can save the results of each run
+(i.e. $\frac{\mu_1}{\mu_2}$, $\alpha$, and X and Y populations) and then do some
+interpolation to get a smoother plot, but that may be more effort than it's worth
+and I'm not sure that's the results we'd even want.
+
+I've modified the code to generate either a contour plot, or an animation of the
+contour plot at different timesteps. These timesteps are currently independent,
+i.e. if you run for T = 1, 2, 3  it will not be snapshots of the same simulation
+at T=1, 2, and 3. It will be 3 separate, independent simulation runs.
+
+Now that I have my simulation results, I will model what plot I'd expect to see
+from the differential equations describing the reactions.
+
+I've modelled $\frac{\mu_1}{\mu_2}$ vs $\alpha$ in Mathematica, using the same
+value of $\mu_1 = .8$ and ranges of $\alpha = [.2 .. ,7]$ and $\mu_2 = [.29 ... .8]$.
+However, the contour animation in Mathematica does not seem to show the Y population
+dominating the X as quickly as the simulation does. Examples at $T=0.9$ and
+$T=1.5$ are provided below.
+
+
+\begin{figure}[h!]
+\includegraphics[width=.5\columnwidth]{mathematica_T0_9.pdf}
+\includegraphics[width=.5\columnwidth]{python_T0_9.pdf}
+\caption{Plots of $\mu2$ vs $\alpha$ at $T=0.9$ in Mathematica (left) and Python (right)}
+\end{figure}
+
+\begin{figure}[h!]
+\includegraphics[width=.5\columnwidth]{mathematica_T1_5.pdf}
+\includegraphics[width=.5\columnwidth]{python_T1_5.pdf}
+\caption{Plots of $\mu2$ vs $\alpha$ at $T=1.5$ in Mathematica (left) and Python (right)}
+\end{figure}
+
+These figures are a little hard to compare though, because the color schemes
+aren't quite the same. I'll work on finding a way to match those up, or perhaps
+revisit the interpolated contour plot I have in \texttt{plasmids.py}. Using that,
+I could label the contours on both, and compare values that way.
+
+
 
 %------------------------------------------------------------------------------
 %	BIBLIOGRAPHY
