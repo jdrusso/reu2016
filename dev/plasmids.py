@@ -8,8 +8,7 @@
 import numpy as np
 import scipy.interpolate
 
-import matplotlib
-# matplotlib.use("Agg")
+import matplotlib as mpl
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
@@ -187,80 +186,72 @@ def plotData(x, y, z, RESOLUTION=64):
 
     plt.show()
 
-def animate(i, X, Y, Z):
+def animate(i, X, Y, Z, ax, z):
+    # Clean up axes - NEED THIS!
+    ax.cla()
+
+    # Pick out the X, Y, Z data corresponding to the ith time
     x = X[i]
     y = Y[i]
     z = Z[i]
 
+    # Reshape data for contour plot
     cols = np.unique(x).shape[0]
     X = np.array(x).reshape(-1, cols)
     Y = np.array(y).reshape(-1, cols)
     Z = np.array(z).reshape(-1, cols)
 
-    print(Z)
-
     levels = np.linspace(0, 1, 50)
-    cont = plt.contourf(X, Y, Z, levels=levels)
+    cont = ax.contourf(X, Y, Z, levels=levels)
     plt.title("Step %d" % i)
-    # plt.show()
-    # plt.colorbar(cont)
-
-    return cont
-
-
-# Function to draw and animate a contour plot of population vs
-def animateContour(m2=[.1, .7], a=[.1, .9], mu1=.8, RESOLUTION=64):
-
-    fig = plt.figure()
-    ax = plt.axes(xlim=tuple(a), ylim=tuple(m2))
-
     plt.xlabel('alpha')
     plt.ylabel('mu1/mu2')
 
-    times = np.linspace(0.1,3.,10)
+    # Hack to print the color bar. If it's done every loop, it duplicates.
+    if i == 1:
+        plt.colorbar(cont, label="X percentage of population")
 
-    X, Y, Z = [], [], []
+    return cont,
+
+# Function to draw and animate a contour plot of population vs
+def animateContour(m2=[.1, .7], a=[.1, .9], mu1=.8, RESOLUTION=128):
+
+    # Set up plot
+    fig = plt.figure()
+    ax = plt.axes(xlim=tuple(a), ylim=tuple(m2))
+
+    # Generate a range of times
+    times = np.linspace(0.1,3.,25)
+
 
     # Generate data
+    X, Y, Z = [], [], []
     for time in times:
         x, y, z = mu_vs_alpha(t_max = time, RESOLUTION=RESOLUTION)
         X += [x]
         Y += [y]
         Z += [z]
 
+    # Generate animation
+    anim = animation.FuncAnimation(fig, animate, frames=len(times), interval=150,
+                fargs=(X, Y, Z, ax, True), blit=False)
 
-    # DIY animation, since matplotlib's isn't working
-    plt.ion()
-    plt.figure(1)
+    # plt.colorbar(label="X percentage in population")
 
-    images = []
-    for i in range(len(times)):
-        fig.clf()
-        cont = animate(i, X, Y, Z)
-        plt.colorbar(label="Percentage of X")
-        plt.xlabel("alpha")
-        plt.ylabel("mu1 / mu2")
-        plt.draw()
+    # Write animation to MP4 using ffmpeg
+    writer = animation.writers['ffmpeg']()
+    anim.save("animation.mp4", writer=writer)
 
-        #################################################################
-        ## Bug fix for Quad Contour set not having the attributes
-        ## 'set_visible' and 'set_animated'
-        def setvisible(self,vis):
-            for c in self.collections: c.set_visible(vis)
-        def setanimated(self,ani):
-            for c in self.collections: c.set_animated(ani)
-        cont.set_visible = types.MethodType(setvisible,cont)
-        cont.set_animated = types.MethodType(setanimated,cont)
-        cont.axes = plt.gca()
-        cont.figure = fig
-        ####################################################################
-
-        images.append((cont,))
+    return anim
 
 def main():
     res = 32
 
-    animateContour(m2=[.3, .7], a=[.2, .7], mu1=.8, RESOLUTION=res)
+    # x, y, z = mu_vs_alpha(m2=[.3, .7], a=[.2, .7], mu1=.8, RESOLUTION=res)
+    # plotData(x, y, z, RESOLUTION=res)
+
+    a = animateContour(m2=[.3, .7], a=[.2, .7], mu1=.8, RESOLUTION=res)
+    return a
 
 if __name__ == "__main__":
-    main()
+    a = main()
