@@ -24,7 +24,6 @@ T_MAX = 1
 # Initial population size
 N_0 = 10
 
-
 # Function to calculate the Gillespie algorithm over time T_MAX for
 #   two set reactions.
 # Reaction 1: X -> 2X
@@ -49,6 +48,9 @@ def gillespie(mu1=.7, mu2=.4, alpha=.2, t_max=T_MAX):
     while t < t_max:
 
         # Execute Gillespie algorithm
+
+        # Update alpha
+        # alpha = get_alpha(N_x)
 
         ######## STEP 2 ########
         # Calculate reaction probability distribution
@@ -141,9 +143,7 @@ def mu_vs_alpha(RESOLUTION=64, m2=[.3, .7], a=[.2, .7], mu1=.8, t_max=T_MAX):
 
     return x, y, z
 
-def x_vs_alpha(mu2s, a, mu1, RESOLUTION=64, t_max=T_MAX):
-
-    # results = []
+def x_vs_alpha(mu2s, a, mu1, t_max=T_MAX):
 
     X = []
     Y = []
@@ -196,9 +196,7 @@ def x_vs_alpha(mu2s, a, mu1, RESOLUTION=64, t_max=T_MAX):
 
     return X, Y, Z
 
-def x_vs_mu(mu2s, a, mu1, RESOLUTION=64, t_max=T_MAX):
-
-    # results = []
+def x_vs_mu(mu2s, a, mu1, t_max=T_MAX):
 
     X = []
     Y = []
@@ -248,6 +246,61 @@ def x_vs_mu(mu2s, a, mu1, RESOLUTION=64, t_max=T_MAX):
     # plt.ylim([0.7,1.])
 
     linePlotData(X, Y, Z, mu1=.8, t_max=T_MAX, title = r"$\alpha$")
+
+    return X, Y, Z
+
+def x_vs_t(mu2s, a, mu1, t_max):
+
+    res = 64
+    data = []
+    X = []
+    Y = []
+    Z = []
+
+    # Want a list of (time step, X pop, alpha, mu1/mu2)
+    for alpha in a:
+        for mu2 in mu2s:
+            results = []
+            for t in np.linspace(0.001, t_max, res):
+                temp = gillespie(mu1, mu2, alpha, t_max=t)
+                # print(temp)
+                # print('\n')
+                ###### Store [t, N_x, N_y, alpha, mu1/mu2] in results
+                # Store [t, alpha, mu, N_x, N_y]
+                temp[1].insert(0, t)
+                # print(temp[1])
+                results.append(temp[1])
+
+            # Unzip results into temp[0] = list of time values, temp[1] = list of
+            #   X pops, etc
+            temp = [list(t) for t in zip(*results)]
+
+            # time
+            x = temp[0]
+            # X population
+            y = [0]*len(x)
+
+            # (alpha, mu1/mu2)
+            z = ["%.2f, %.2f" % (temp[1][n], temp[2][n]) for n in range(len(x))]
+            # print(z)
+
+            for v in range(len(x)):
+                if temp[4][v] == 0:
+                    y[v] = 1.0
+                    continue
+
+                #Set Z to be the percentage of non-carrier bacteria
+                y[v] = float(temp[3][v]) / float(temp[3][v]+temp[4][v])
+
+            X += [x]
+            Y += [y]
+            Z += [z]
+
+    linePlotData(X, Y, Z, mu1=.8, t_max=T_MAX, title = r"       $\alpha$,    $\mu1/\mu2$")
+
+    # print Y
+    plt.xlabel("t", fontsize=24)
+    plt.title(r"X population vs. t")
 
     return X, Y, Z
 
@@ -436,11 +489,17 @@ def animateContour(m2=[.1, .7], a=[.1, .9], mu1=.8, RESOLUTION=128):
 def linePlotData(xs, ys, zs, mu1, t_max, title):
 
     colors = list('rgbymc')
-    c = 0
+    print(ys[0])
+    print(ys[1])
+    print(ys[2])
+    print(len(ys[0]))
+    print(len(ys[1]))
+    print(len(ys[2]))
 
-    for mu2 in zs:
+    for c in range(len(zs)):
 
         color = colors[c%len(colors)]
+        print(color)
 
         # Plot data
         plt.plot(xs[c], ys[c], color+'o')
@@ -448,9 +507,8 @@ def linePlotData(xs, ys, zs, mu1, t_max, title):
         # Plot best fit line
         plt.plot(xs[c], np.poly1d(np.polyfit(xs[c], ys[c], 1))(xs[c]),
             color+'-',
-            label="%.3f" % zs[c][-1], linewidth=3)
-
-        c += 1
+            label="%s" % zs[c][-1], linewidth=3)
+            # label="%.3f" % zs[c][-1], linewidth=3)
 
     plt.legend(loc='lower left', title=title)
 
@@ -471,13 +529,16 @@ def main():
 
     # Generate line plot of x vs alpha. ys is a list of alpha values,
     #    zs is a list of mu1/mu2 values
-    x_vs_alpha(mu2s=np.linspace(.7,.78,5), a=np.linspace(.01, .1, res), mu1=.8, RESOLUTION=res)
+    # x_vs_alpha(mu2s=np.linspace(.7,.78,5), a=np.linspace(.01, .1, res), mu1=.8)
 
 
 
     # Generate line plot of x vs alpha. ys is a list of alpha values,
     #    zs is a list of mu1/mu2 values
-    x_vs_mu(mu2s=np.linspace(.7,.78,res), a=np.linspace(.01, .1, 5), mu1=.8, RESOLUTION=res)
+    # x_vs_mu(mu2s=np.linspace(.7,.78,res), a=np.linspace(.01, .1, 5), mu1=.8)
+
+
+    x_vs_t(mu2s=[.7, .74, .78], a=[.01, .1], mu1=.8, t_max=1.5)
 
     plt.show()
 
