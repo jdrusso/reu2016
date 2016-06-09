@@ -21,7 +21,6 @@
   \end{equation}}
 \newcommand{\lreaction}[4]{
   \begin{equation}
-  \label{#1}
   #2 \overset{#4}{\rightarrow} #3
   \end{equation}}
 
@@ -209,9 +208,12 @@ plasmid loss."
 
 Currently\commit{5932c50}, the simulation only models the following two reactions
 
-\reaction{X}{\emptyset}{\mu_1}
-\reaction{X}{2X}{\mu_2}
-
+% \reaction{X}{\emptyset}{\mu_1}
+% \reaction{X}{2X}{\mu_2}
+\begin{align}
+  X & \overset{\alpha}{\rightarrow} \emptyset\\
+  X & \overset{\mu_2}{\rightarrow} 2X
+\end{align}
 which correspond to death and reproduction respectively. However, in order to
 move forward, we'd like to expand the reactions considered.
 
@@ -220,12 +222,18 @@ move forward, we'd like to expand the reactions considered.
 We can simulate a bacterium transforming by taking in a plasmid from its
 environment with a new set of reactions
 
-\lreaction{xbirth}{X}{2X}{\mu_1}
-\lreaction{transform}{X}{Y}{\alpha}
-\reaction{Y}{2Y}{\mu_2}
+% \lreaction{xbirth}{X}{2X}{\mu_1}
+% \lreaction{transform}{X}{Y}{\alpha}
+% \reaction{Y}{2Y}{\mu_2}
+
+\begin{align}
+  X & \overset{\mu_1}{\rightarrow} 2X \label{rxn:x_birth}\\
+  X & \overset{\alpha}{\rightarrow} Y \label{rxn:transf}\\
+  Y & \overset{\mu_2}{\rightarrow} 2Y \label{rxn:y_birth}
+\end{align}
 
 where X is a bacterium that has not absorbed any plasmids and Y is a plasmid
-carrier. Eqn. \ref{transform} represents transformation, the
+carrier. Eqn. \ref{rxn:transf} represents transformation, the
 process by which a bacterium takes a free plasmid from its environment.
 
 From this, we can quickly see that as per the plasmid paradox mentioned before,
@@ -238,12 +246,10 @@ plasmid to be
 However, the ratio of X to Y will depend significantly on $\alpha$, the probability
 of transformation. We can rewrite the above reactions as differential equations
 
-\begin{equation}
-  \frac{dX}{dt} = \mu_1 \text{X} - \alpha \text{X}
-\end{equation}
-\begin{equation}
-  \frac{dY}{dt} = \mu_2 \text{Y} + \alpha \text{X}
-\end{equation}
+\begin{align}
+  \frac{dX}{dt} & = \mu_1 \text{X} - \alpha \text{X} \label{eq:x_pop}\\
+  \frac{dY}{dt} & = \mu_2 \text{Y} + \alpha \text{X} \label{eq:y_pop}
+\end{align}
 that describe the growth of each population. These have analytical results, but
 may be manipulated into a form that has an exact solution. I'll need to find this
 exact solution so I can verify my simulations are producing the proper output.
@@ -340,6 +346,85 @@ revisit the interpolated contour plot I have in \texttt{plasmids.py}. Using that
 I could label the contours on both, and compare values that way.
 
 
+\labday{June 7, 2016}
+
+\obj{Present simulation results to JJ, and consider next steps.}
+
+\experiment{conjug}
+I've added \texttt{animate2} and \texttt{animate3} function to animate an
+interpolated contour plot and a 3D surface plot, respectively.
+
+The code will occasionally error if one population goes to zero - handle that
+more gracefully!
+
+\labday{June 8, 2016}
+
+\obj{Derive equations for susceptible and resistant population growths, and
+compare to my results from Mathematica.}
+
+We start with the equations
+\begin{align}
+  \frac{dS}{dt} & = b_S S - \alpha S \label{eq:S_growth}\\
+  \frac{dR}{dt} & = b_R R + \alpha S \label{eq:R_growth}
+\end{align}
+describing two populations of particles, S and R, where $b_S$ is the birth rate
+of the S (susceptible) population, $b_R$ is the birth rate of the R (resistant)
+population, and $\alpha$ is the rate at which an S particle can acquire a plasmid
+and become an $R$. These are similar to equations
+\eqref{eq:x_pop} and \eqref{eq:y_pop} mentioned earlier. My goal is to obtain an
+exact solution for $S(t)$ and $R(t)$.
+
+By rewriting \eqref{eq:S_growth} as
+\begin{equation*}
+\frac{dS}{dt} = \left( b_S - \alpha \right) S
+\end{equation*}
+one can see that there is a solution of the form
+\begin{equation}\label{eq:S_sol}
+S(t) = S_0\:e^{\left(b_S - \alpha\right) t}.
+\end{equation}
+
+
+\begin{align*}
+  \frac{dR}{dt} &= b_R R + \alpha S  &&
+      \text{Substitute in \eqref{eq:S_sol} for S.} &\\[1.25ex]
+  \frac{dS}{dt} &= \left( b_S - \alpha \right) S &&
+      \text{Set } R(t)=y(t)e^{\mu t} \text{ and } \mu = b_S - \alpha. &\\[1.25ex]
+  \mu y(t) e^{\mu t} + \dot{y}(t) e^{\mu t} &= b_R y(t) e^{\mu t} + \alpha S_0 e^{\mu t} &&
+      \text{Simplify.} &\\[1.25ex]
+  \mu y(t) + \dot{y}(t) &= b_R y(t) + \alpha S_0 &&
+      \text{Solve for } \dot{y}. &\\[1.25ex]
+  \dot{y}(t) &= (b_R - \mu) y(t) + \alpha S_0 &&
+      \text{Set } a = (b_R - \mu) \text{ and } b = \alpha S_0. &\\[1.25ex]
+  \dot{y}(t) &= a y(t) + b &&
+      \text{Let } x = \dot{y}. &\\[1.25ex]
+  x &= ay + b &&
+      \text{Take the derivative }\dot{x}. &\\[1.25ex]
+  \dot{x} &= a \dot{y} &&
+      \text{Substitute in } \dot{y} = x. &\\[1.25ex]
+  \dot{x} &= a x &&
+      \text{Write the general solution to } x.&\\[1.25ex]
+  x(t) &= x_0 e^{a t} &&
+      \text{Expand.} &\\[1.25ex]
+\end{align*}
+
+\begin{align*}
+  x_0 e^{(b_R - \mu) t} &= ay + b&&
+      \text{Solve for } y &\\[1.25ex]
+  y &= \frac{1}{b_R - \mu} \left(x_0 e^{(b_R - \mu)t} - \alpha S_0\right) &&
+      \text{Substitute back to get an expression for } R(t). &\\[1.25ex]
+  R(t) &= \frac{e^{\mu t} }{b_R - \mu} \left( x_0 e^{(b_R - \mu)t} - \alpha S_0 \right) &&
+      \text{Simplify.} &\\[1.25ex]
+  R(t) &= \frac{1}{b_R + b_S + \alpha} \left[ x_0 e^{b_R t} - \alpha S_0 e^{(b_S - \alpha)t} \right]&&
+      \text{To determine $x_0$, first solve for $R(0)$,} &\\[1.25ex]
+  R(0) &= \frac{1}{b_R + b_S + \alpha} \left[ x_0 - \alpha S_0 \right] &&
+      \text{\quad then solve for } x_0. &\\[1.25ex]
+  x_0 &= (b_R - b_S + \alpha) R(0) + \alpha S_0 &&
+      \text{Plug back in to R(t) and simplify.} &\\[1.25ex]
+  R(t) &= R_0 e^{b_R t} + \frac{\alpha S_0}{b_R - b_S + \alpha} \left(e^{b_R t} - e^{(b_S - \alpha)t} \right) &&
+      \textbf{Exact equation for $R(t)$.} &\\[1.25ex]
+\end{align*}
+
+This is consistent with my results from Mathematica.
 
 %------------------------------------------------------------------------------
 %	BIBLIOGRAPHY
