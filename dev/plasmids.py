@@ -9,7 +9,7 @@ import math
 import numpy as np
 from matplotlib import pyplot as plt
 
-S_0 = 1e6
+S_0 = 1e2
 R_0 = 0
 
 COLORS = list('rgbymc')
@@ -17,6 +17,8 @@ COLORS = list('rgbymc')
 MU1, MU2, ALPHA, T_MAX, S0, R0 = 0, 1, 2, 3, 4, 5
 
 def gillespie(mu1, mu2, alpha, t_max, s0 = S_0, r0 = R_0):
+
+    d1 = .3
 
     #########################
     # Step 1 - Initialization
@@ -32,7 +34,7 @@ def gillespie(mu1, mu2, alpha, t_max, s0 = S_0, r0 = R_0):
 
         #########################
         # Step 2 - Calculate reaction probability distribution
-        a = [N_s * mu1, N_s * alpha, N_r * mu2]
+        a = [N_s * mu1, N_s * alpha, N_r * mu2, N_s * d1]
         a0 = sum(a)
 
         #########################
@@ -46,18 +48,25 @@ def gillespie(mu1, mu2, alpha, t_max, s0 = S_0, r0 = R_0):
             N_s += 1.
 
         # Reaction 2: X -> Y
-        elif r1 * a0 < a[0] + a[1]:
+        elif r1 * a0 < sum(a[:2]):
 
             N_s -= 1.
             N_r += 1.
 
         # Reaction 3: Y -> 2Y
-        elif r1 * a0 < a[0] + a[1] + a[2]:
+        elif r1 * a0 < sum(a[:3]):
 
             N_r += 1.
 
+        # Reaction 4: X -> 0
+        elif r1 * a0 < sum(a[:4]):
+
+            N_s -= 1.
+
         # Shouldn't do this
         else:
+            print(r1 * a0)
+            print(sum(a[:5]))
             print("error")
             pass
 
@@ -115,7 +124,8 @@ def linePlotData(X, Y, Z, title='', xlabel='', ylabel='', l_title='', fit=False)
         color = COLORS[c % len(COLORS)]
 
         # Plot data
-        plt.plot(X[c], Y[c], color+'o', label="%s" % str(Z[c]) )
+        plt.plot(X[c], Y[c], color+'-', label="%s" % str(Z[c]) )
+        plt.plot(X[c], Y[c], color+'o')
 
         if fit:
             # Plot best fit line
@@ -188,7 +198,7 @@ def x_vs_mu(alphas, mu1, mu2s, t_max):
     # Pick out only final S values
     s_pop = [np.log(a[-1]) for a in S_pop]
 
-    mu2s = [ p[MU2]/p[MU1] for p in params]
+    mu2s = [ p[MU1]/p[MU2] for p in params]
 
     # Set up different data series, for each alpha
     series = unique( ("%.2f" % ( p[ALPHA] ) for p in params ) )
@@ -213,7 +223,7 @@ def x_vs_mu(alphas, mu1, mu2s, t_max):
 
     linePlotData(x, y, series,
                 title = r"S vs. $\mu1 / \mu2$", xlabel=r"$\mu1 / \mu2$", ylabel="log(S population)",
-                l_title = r"$\alpha$", fit=True)
+                l_title = r"$\alpha$", fit=False)
 
 
 # Return list of unique elements
@@ -225,11 +235,14 @@ def unique(seq):
 
 def main():
 
-    x_vs_t(alphas=[.01, .1, .2], mu1=.8, mu2s=[.7, .78], t_max=5)
+    x_vs_t(alphas=[.2], mu1=.8, mu2s=[.7], t_max=20)
+    # x_vs_t(alphas=[.1, .2], mu1=.8, mu2s=[.7, .78], t_max=10)
     # x_vs_alpha(alphas=np.linspace(.01,.1,10), mu1=.8, mu2s=[.7, .74, .78], t_max=5)
-    # x_vs_mu(alphas=np.linspace(.01,.1,6), mu1=.8, mu2s=np.linspace(.7,.78,10), t_max=5)
+    # x_vs_mu(alphas=np.linspace(.01,.1,6), mu1=.8, mu2s=np.linspace(.7,.78,10), t_max=10)
 
-    plt.show()
+    # plt.savefig('out.pdf', format='pdf')
+    # plt.close()
+    # plt.show()
     return
 
 if __name__ == "__main__":
