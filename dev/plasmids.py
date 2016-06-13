@@ -5,9 +5,15 @@
 # - https://people.maths.ox.ac.uk/erban/Education/StochReacDiff.pdf
 # - Heiko Reiger "Kinetic Monte Carlo" slides
 
+# Set True to enable multithreading
+THREADED = True
+
 import math
 import numpy as np
 from matplotlib import pyplot as plt
+
+if THREADED:
+    import multiprocessing
 
 S_0 = 1e2
 R_0 = 0
@@ -16,10 +22,12 @@ COLORS = list('rgbymc')
 
 MU1, MU2, ALPHA, T_MAX, S0, R0 = 0, 1, 2, 3, 4, 5
 
-def gillespie(mu1, mu2, alpha, t_max, s0 = S_0, r0 = R_0):
+def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0):
 
     d1 = .3
 
+    spacing = .05
+    cur_t = 0
     #########################
     # Step 1 - Initialization
 
@@ -76,8 +84,19 @@ def gillespie(mu1, mu2, alpha, t_max, s0 = S_0, r0 = R_0):
         r2 = np.random.rand()
         tau = -np.log(r2)/a0
         t += tau
+        cur_t += tau
 
-        data.append([t, N_s, N_r])
+        # Only save data if a certain interval between datapoints is met
+        if cur_t > spacing:
+            data.append([t, N_s, N_r])
+            cur_t = 0
+
+
+    if THREADED and not q == False:
+        print(len(data))
+        q.put((data, (mu1, mu2, alpha, t_max, s0, r0)))
+        # q.put(('zz', 'zz'))
+        print("Data stored in queue")
 
     return data, (mu1, mu2, alpha, t_max, s0, r0)
 
@@ -87,13 +106,33 @@ def run(alphas, mu1, mu2s, t_max):
     print("Beginning simulation runs...")
 
     T, X, Y, params = [], [], [], []
-
+    if THREADED:
+        jobs = []
+        q = multiprocessing.Queue()
+        workers = 0
     for mu2 in mu2s:
         for alpha in alphas:
-            output = []
-            data, p = gillespie(mu1, mu2, alpha, t_max)
+
+            if THREADED:
+                worker = multiprocessing.Process(target=gillespie,
+                    args =(mu1, mu2, alpha, t_max, q))
+                jobs.append(worker)
+                worker.start()
+                workers += 1
+
+            else:
+                data, p = gillespie(mu1, mu2, alpha, t_max)
+
+                t, x, y = [list(t) for t in zip(*data)]
+                T += [t]
+                X += [x]
+                Y += [Y]
+                params += [p]
 
 
+    if THREADED:
+        print("Started %d workers." % workers)
+        for data, p in iter(q.get, None):
             t, x, y = [list(t) for t in zip(*data)]
 
             T += [t]
@@ -102,7 +141,13 @@ def run(alphas, mu1, mu2s, t_max):
             params += [p]
 
             print("Completed.")
-        print("Done.")
+            workers -= 1
+            if workers == 0:
+                print("All data acquired.")
+                break
+
+        for job in jobs:
+            job.join()
 
     return T, X, Y, params
 
@@ -235,8 +280,8 @@ def unique(seq):
 
 def main():
 
-    x_vs_t(alphas=[.2], mu1=.8, mu2s=[.7], t_max=20)
-    # x_vs_t(alphas=[.1, .2], mu1=.8, mu2s=[.7, .78], t_max=10)
+    # x_vs_t(alphas=[.1], mu1=.8, mu2s=[.7], t_max=18)
+    x_vs_t(alphas=np.linspace(.1,.3,6), mu1=.8, mu2s=np.linspace(.7,.78,3), t_max=18)
     # x_vs_alpha(alphas=np.linspace(.01,.1,10), mu1=.8, mu2s=[.7, .74, .78], t_max=5)
     # x_vs_mu(alphas=np.linspace(.01,.1,6), mu1=.8, mu2s=np.linspace(.7,.78,10), t_max=10)
 
