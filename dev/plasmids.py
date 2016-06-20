@@ -77,10 +77,10 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0):
 
             N_r += 1.
 
-        # Reaction 4: X -> 0
+        # Reaction 4: Y -> 0
         elif r1 * a0 < sum(a[:4]):
 
-            N_s -= 1.
+            N_r -= 1.
 
         # Shouldn't do this
         else:
