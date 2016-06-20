@@ -168,10 +168,9 @@ def linePlotData(X, Y, Z, title='', xlabel='', ylabel='', l_title='', fit=False)
 
     pps = len(X)/len(Z)
     print("pps is %d" % pps)
-    # print(len(X))
-    # print(len(Z))
 
     for c in range(len(Z)):
+        print("plotting....")
 
         # Pick a color
         color = COLORS[c % len(COLORS)]
@@ -187,14 +186,13 @@ def linePlotData(X, Y, Z, title='', xlabel='', ylabel='', l_title='', fit=False)
 
     # Format plot
     plt.legend(loc='best', title=l_title)
-    # plt.xlim([0, max(X[0])])
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
 
 
 
-def stats(T, S, R, params):
+def stats(T, S, R, params, plot=True):
 
     minlen = min([len(x) for x in S])
 
@@ -220,9 +218,11 @@ def stats(T, S, R, params):
     # print(err)
     # mean = np.mean(S, 0)
 
-    if PLOTTING:
+    if PLOTTING and plot:
         # plt.errorbar(T[0][:minlen], (mean), yerr=(err), fmt='k-', linewidth=2)
         plt.errorbar(T[0][:minlen], np.log(mean), yerr=np.log(err), fmt='k-', linewidth=2)
+
+    return T[0][:minlen], mean, err
 
 
 
@@ -260,6 +260,36 @@ def x_vs_t(alphas, mu1, mu2s, t_max):
 
     stats(T, S_pop, R_pop, params)
 
+def std_vs_t(alphas, mu1, mu2s, t_max):
+
+    T, S_pop, R_pop, params = run(alphas, mu1, mu2s, t_max)
+
+    global timestamp
+    filename = "output/out_{}.dat".format(timestamp)
+    np.savetxt(filename, (np.array(T), np.array(S_pop)), fmt="%s",
+        header="Alphas: %s | mu1: %s | mu2s: %s | t_max: %d" %
+            (alphas, mu1, mu2s, t_max))
+
+    series = list(("%.2f, %.2f" % (p[2], p[0]/p[1])) for p in params)
+
+
+    if PLOTTING:
+        T,mean,err = stats(T, S_pop, R_pop, params, plot=False)
+
+        print(err)
+
+        # plt.plot(T, err)
+        linePlotData([T], [np.log(err)], [None],
+                    title = "Std. Dev of S Population vs. t",
+                    xlabel="t", ylabel="log(Std. dev)",
+                    l_title = r"       $\mu1/\mu2$,   $\alpha$")
+        plt.text(0.1,.75,
+            r'$\alpha$: %.2f' % params[0][ALPHA]+
+            '\n$\mu1/\mu2$: %.2f\n' % (params[0][MU1]/params[0][MU2]) +
+            "$S_0$ = %d, $R_0$ = %d"%(params[0][S0], params[0][R0]),
+            transform=plt.gca().transAxes)
+        plt.gca().legend().set_visible(False)
+
 def x_vs_alpha(alphas, mu1, mu2s, t_max):
 
     T, S_pop, R_pop, params = run(alphas, mu1, mu2s, t_max)
@@ -289,6 +319,11 @@ def x_vs_alpha(alphas, mu1, mu2s, t_max):
         linePlotData(x, y, series,
                     title = r"S vs. $alpha$", xlabel=r"$\alpha$", ylabel="log(S population)",
                     l_title = r"$\mu1/\mu2$", fit=True)
+        plt.text(0.1,.75,
+            r'$t$: %.2f' % t_max+
+            '\n$\mu1/\mu2$: %.2f\n' % (params[0][MU1]/params[0][MU2]) +
+            "$S_0$ = %d, $R_0$ = %d"%(params[0][S0], params[0][R0]),
+            transform=plt.gca().transAxes)
 
 
 
@@ -325,6 +360,11 @@ def x_vs_mu(alphas, mu1, mu2s, t_max):
         linePlotData(x, y, series,
                     title = r"S vs. $\mu1 / \mu2$", xlabel=r"$\mu1 / \mu2$", ylabel="log(S population)",
                     l_title = r"$\alpha$", fit=False)
+        plt.text(0.1,.75,
+            r'$t$: %.2f' % t_max+
+            '\n$\alpha$: %.2f\n' % (params[0][ALPHA]) +
+            "$S_0$ = %d, $R_0$ = %d"%(params[0][S0], params[0][R0]),
+            transform=plt.gca().transAxes)
 
 
 # Return list of unique elements
@@ -339,16 +379,17 @@ def main():
     global timestamp
     timestamp = dt.datetime.now().strftime('%m%d_%H%M%S')
 
-    x_vs_t(alphas=[.1]*5, mu1=.8, mu2s=[.7]*6, t_max=10)
+    # x_vs_t(alphas=[.1]*5, mu1=.8, mu2s=[.7]*6, t_max=10)
+    std_vs_t(alphas=[.1]*5, mu1=.8, mu2s=[.7]*6, t_max=10)
 
     # x_vs_t(alphas=np.linspace(.1,.3,6), mu1=.8, mu2s=np.linspace(.7,.78,3), t_max=10)
     # x_vs_alpha(alphas=np.linspace(.01,.1,10), mu1=.8, mu2s=[.7, .74, .78], t_max=5)
     # x_vs_mu(alphas=np.linspace(.01,.1,6), mu1=.8, mu2s=np.linspace(.7,.78,10), t_max=10)
 
-    plt.gca().legend().set_visible(False)
+    # plt.gca().legend().set_visible(False)
     plt.savefig('output/out_%s.pdf' % timestamp)
     # plt.close()
-    plt.show()
+    # plt.show()
     return
 
 if __name__ == "__main__":
