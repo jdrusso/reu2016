@@ -22,7 +22,7 @@ if PLOTTING:
 if THREADED:
     import multiprocessing
 
-S_0 = 1e3
+S_0 = 1e2
 R_0 = 0
 timestamp = 0
 
@@ -67,7 +67,7 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0):
             N_s += 1.
 
         # Reaction 2: X -> Y
-        elif r1 * a0 < sum(a[:2]):
+        elif r1 * a0 < sum(a[:2]) and N_s > 0:
 
             N_s -= 1.
             N_r += 1.
@@ -79,8 +79,8 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0):
 
         # Reaction 4: Y -> 0
         elif r1 * a0 < sum(a[:4]):
-
-            N_r -= 1.
+            if N_r >= 1:
+                N_r -= 1.
 
         # Shouldn't do this
         else:
@@ -99,7 +99,13 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0):
 
         # Only save data if a certain interval between datapoints is met
         if cur_t > spacing:
-            data.append([t, N_s, N_r])
+            ns = N_s
+            nr = N_r
+            if ns == 1:
+                ns == 10e-10
+            if nr == 1:
+                nr == 10e-10
+            data.append([t, ns, nr])
             cur_t = 0
 
 
@@ -137,7 +143,7 @@ def run(alphas, mu1, mu2s, t_max):
                 t, x, y = [list(t) for t in zip(*data)]
                 T += [t]
                 X += [x]
-                Y += [Y]
+                Y += [y]
                 params += [p]
 
 
@@ -148,7 +154,7 @@ def run(alphas, mu1, mu2s, t_max):
 
             T += [t]
             X += [x]
-            Y += [Y]
+            Y += [y]
             params += [p]
 
             print("Completed.")
@@ -163,6 +169,20 @@ def run(alphas, mu1, mu2s, t_max):
     return T, X, Y, params
 
 def linePlotData(X, Y, Z, title='', xlabel='', ylabel='', l_title='', fit=False):
+
+    # for i in range(len(X)):
+    #     for j in range(len(X[i])):
+    #         if np.isinf(X[i][j]):
+
+    print("yyyy")
+    for i in range(len(Y)):
+        print("\nY")
+        # print(_y)
+        Y[i] = map(lambda x: (0 if np.isinf(x) else x), Y[i])
+        # print(_y)
+        print('\n\n')
+
+    print(Y)
 
     print("Beginning plotting.")
 
@@ -192,17 +212,20 @@ def linePlotData(X, Y, Z, title='', xlabel='', ylabel='', l_title='', fit=False)
 
 
 
-def stats(T, S, R, params, plot=True):
+def stats(T, S, params, plot=True):
 
     minlen = min([len(x) for x in S])
 
     for i in range(len(S)):
         S[i] = S[i][:minlen]
+        # for ix in range(len(S[i])):
+        #     if S[i][ix] == 0:
+        #         S[i][ix] = 10e-10
 
     S = np.array(S)
-    print([len(x) for x in S])
+    # print([len(x) for x in S])
     S.reshape((len(S),minlen))
-    print(S.shape)
+    # print(S.shape)
 
     mean = []
     err = []
@@ -213,14 +236,21 @@ def stats(T, S, R, params, plot=True):
 
         mean += [np.mean(temp)]
         err += [np.std(temp)]
-        print("%f %s\n" % (np.std(temp), temp))
+        # print("%f %s\n" % (np.std(temp), temp))
+
+    mean = np.log(mean)
+    err = np.log(err)
+
+    mean = map(lambda x: (0 if np.isinf(x) else x), mean)
+    err = map(lambda x: (0 if np.isinf(x) else x), err)
 
     # print(err)
+    # print(mean)
     # mean = np.mean(S, 0)
 
     if PLOTTING and plot:
         # plt.errorbar(T[0][:minlen], (mean), yerr=(err), fmt='k-', linewidth=2)
-        plt.errorbar(T[0][:minlen], np.log(mean), yerr=np.log(err), fmt='k-', linewidth=2)
+        plt.errorbar(T[0][:minlen], mean, yerr=err, fmt='k-', linewidth=2)
 
     return T[0][:minlen], mean, err
 
@@ -230,11 +260,7 @@ def x_vs_t(alphas, mu1, mu2s, t_max):
 
     T, S_pop, R_pop, params = run(alphas, mu1, mu2s, t_max)
 
-    # print(len(T[0]))
-    # print(len(S_pop[0]))
-    # print(len(R_pop[0]))
-    # print(len(T))
-    # print(len(S_pop))
+    print("Finished runs.")
 
     global timestamp
     filename = "output/out_{}.dat".format(timestamp)
@@ -242,11 +268,14 @@ def x_vs_t(alphas, mu1, mu2s, t_max):
         header="Alphas: %s | mu1: %s | mu2s: %s | t_max: %d" %
             (alphas, mu1, mu2s, t_max))
 
-    series = list(("%.2f, %.2f" % (p[2], p[0]/p[1])) for p in params)
+    series = list(("%.2f, %.2f" % (p[MU1]/p[MU2], p[2])) for p in params)
 
     s = [np.log(np.array(a)) for a in S_pop]
+    r = [np.log(np.array(a)) for a in R_pop]
+    # r = [np.array(a) for a in R_pop]
     # s = [np.array(a) for a in S_pop]
 
+    print("Begining plotting.")
 
     if PLOTTING:
         linePlotData(T, s, series,
@@ -258,7 +287,7 @@ def x_vs_t(alphas, mu1, mu2s, t_max):
             "$S_0$ = %d, $R_0$ = %d"%(params[0][S0], params[0][R0]),
             transform=plt.gca().transAxes)
 
-    stats(T, S_pop, R_pop, params)
+    # stats(T, S_pop, params)
 
 def std_vs_t(alphas, mu1, mu2s, t_max):
 
@@ -379,17 +408,17 @@ def main():
     global timestamp
     timestamp = dt.datetime.now().strftime('%m%d_%H%M%S')
 
-    # x_vs_t(alphas=[.1]*5, mu1=.8, mu2s=[.7]*6, t_max=10)
-    std_vs_t(alphas=[.1]*5, mu1=.8, mu2s=[.7]*6, t_max=10)
+    # x_vs_t(alphas=[.3]*2, mu1=.8, mu2s=[.77]*2, t_max=15)
+    # std_vs_t(alphas=[.1]*5, mu1=.8, mu2s=[.7]*6, t_max=10)
 
-    # x_vs_t(alphas=np.linspace(.1,.3,6), mu1=.8, mu2s=np.linspace(.7,.78,3), t_max=10)
+    x_vs_t(alphas=np.linspace(.1,.3,3), mu1=.8, mu2s=np.linspace(.7,.78,2), t_max=10)
     # x_vs_alpha(alphas=np.linspace(.01,.1,10), mu1=.8, mu2s=[.7, .74, .78], t_max=5)
     # x_vs_mu(alphas=np.linspace(.01,.1,6), mu1=.8, mu2s=np.linspace(.7,.78,10), t_max=10)
 
     # plt.gca().legend().set_visible(False)
-    plt.savefig('output/out_%s.pdf' % timestamp)
+    # plt.savefig('output/out_%s.pdf' % timestamp)
     # plt.close()
-    # plt.show()
+    plt.show()
     return
 
 if __name__ == "__main__":
