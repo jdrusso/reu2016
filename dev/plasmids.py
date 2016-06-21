@@ -32,14 +32,18 @@ R_0 = 1.e3
 #Carrying capacity
 K = 1.e5
 #Maximum number of plasmids availab
-PLASMIDS = 1e7
+PLASMIDS = 1.e4
+
+LABEL_X = .05
+LABEL_Y = .8
+
 timestamp = 0
 
 COLORS = list('rgbymc')
 
 MU1, MU2, ALPHA, T_MAX, S0, R0 = 0, 1, 2, 3, 4, 5
 
-def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, num=0):
+def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLASMIDS, num=0):
 
     if PBAR:
         writer = mpb.Writer((0,10+num))
@@ -61,6 +65,7 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, num=0):
 
     N_s = s0
     N_r = r0
+    plasmids = _PLASMIDS
 
     data = []
     while t < t_max:
@@ -69,8 +74,9 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, num=0):
         # Step 2 - Calculate reaction probability distribution
         # print("NS: %f \t %f" %(N_s * (1- (N_s+N_r)/K) * mu1, N_s))
         # print("NR: %f \t %f" % (N_r * (1- (N_s+N_r)/K) * mu1, N_r))
-        a = [N_s * (1- (N_s+N_r)/K) * mu1,
-            N_s * alpha,
+
+        a =[N_s * (1- (N_s+N_r)/K) * mu1,
+            N_s * (plasmids/_PLASMIDS) * alpha,
             N_r * (1- (N_s+N_r)/K) * mu2,
             N_s * d1]
         a0 = sum(a)
@@ -90,6 +96,7 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, num=0):
 
             N_s -= 1.
             N_r += 1.
+            plasmids -= 1.
 
         # Reaction 3: Y -> 2Y
         elif r1 * a0 < sum(a[:3]):
@@ -225,6 +232,7 @@ def linePlotData(X, Y, Z, title='', xlabel='', ylabel='', l_title='', fit=False,
 
     # Format plot
     plt.legend(loc='best', title=l_title)
+    plt.gca().legend().draggable()
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -301,11 +309,12 @@ def x_vs_t(alphas, mu1, mu2s, t_max):
         linePlotData(T, s, series,
                     title = "S vs. t", xlabel="t", ylabel="log(S population)",
                     l_title = r"       $\mu1/\mu2$,   $\alpha$")
-        plt.text(0.05,.7,
+        plt.text(LABEL_X, LABEL_Y,
             r'$\alpha$: %.2f' % params[0][ALPHA]+
             '\n$\mu1/\mu2$: %.2f\n' % (params[0][MU1]/params[0][MU2]) +
             "$S_0$ = %d, $R_0$ = %d"%(params[0][S0], params[0][R0]) +
-            "\n$K$ = %.0e "% K,
+            "\n$K$ = %.0e "% K +
+            "\nPlasmids: %.0e" % PLASMIDS,
             transform=plt.gca().transAxes)
 
     # stats(T, S_pop, params)
@@ -334,11 +343,12 @@ def std_vs_t(alphas, mu1, mu2s, t_max):
                     title = "Std. Dev of S Population vs. t",
                     xlabel="t", ylabel="log(Std. dev)",
                     l_title = r"       $\mu1/\mu2$,   $\alpha$")
-        plt.text(0.05,.7,
+        plt.text(LABEL_X, LABEL_Y,
             r'$\alpha$: %.2f' % params[0][ALPHA]+
             '\n$\mu1/\mu2$: %.2f\n' % (params[0][MU1]/params[0][MU2]) +
             "$S_0$ = %d, $R_0$ = %d"%(params[0][S0], params[0][R0]) +
-            "\n$K$ = %.0e "% K,
+            "\n$K$ = %.0e "% K +
+            "\nPlasmids: %.0e" % PLASMIDS,
             transform=plt.gca().transAxes)
         plt.gca().legend().set_visible(False)
 
@@ -371,11 +381,12 @@ def x_vs_alpha(alphas, mu1, mu2s, t_max):
         linePlotData(x, y, series,
                     title = r"S vs. $alpha$", xlabel=r"$\alpha$", ylabel="log(S population)",
                     l_title = r"$\mu1/\mu2$", fit=True)
-        plt.text(0.05,.7,
+        plt.text(LABEL_X, LABEL_Y,
             r'$t$: %.2f' % t_max+
             '\n$\mu1/\mu2$: %.2f\n' % (params[0][MU1]/params[0][MU2]) +
             "$S_0$ = %d, $R_0$ = %d"%(params[0][S0], params[0][R0]) +
-            "\n$K$ = %.0e "% K,
+            "\n$K$ = %.0e "% K +
+            "\nPlasmids: %.0e" % PLASMIDS,
             transform=plt.gca().transAxes)
 
 
@@ -413,11 +424,12 @@ def x_vs_mu(alphas, mu1, mu2s, t_max):
         linePlotData(x, y, series,
                     title = r"S vs. $\mu1 / \mu2$", xlabel=r"$\mu1 / \mu2$", ylabel="log(S population)",
                     l_title = r"$\alpha$", fit=False)
-        plt.text(0.05,.7,
+        plt.text(LABEL_X, LABEL_Y,
             r'$t$: %.2f' % t_max+
             '\n$\alpha$: %.2f\n' % (params[0][ALPHA]) +
             "$S_0$ = %d, $R_0$ = %d"%(params[0][S0], params[0][R0]) +
-            "\n$K$ = %.0e "% K,
+            "\n$K$ = %.0e "% K +
+            "\nPlasmids: %.0e" % PLASMIDS,
             transform=plt.gca().transAxes)
 
 
@@ -436,7 +448,7 @@ def main():
     # x_vs_t(alphas=[.3]*2, mu1=.8, mu2s=[.77]*2, t_max=15)
     # std_vs_t(alphas=[.1]*5, mu1=.8, mu2s=[.7]*6, t_max=10)
 
-    x_vs_t(alphas=np.linspace(.1,.3,2), mu1=.8, mu2s=np.linspace(.75,.78,2), t_max=15)
+    x_vs_t(alphas=np.linspace(.1,.3,2), mu1=.8, mu2s=np.linspace(.75,.78,2), t_max=20)
     # x_vs_alpha(alphas=np.linspace(.01,.1,10), mu1=.8, mu2s=[.7, .74, .78], t_max=5)
     # x_vs_mu(alphas=np.linspace(.01,.1,6), mu1=.8, mu2s=np.linspace(.7,.78,10), t_max=10)
 
