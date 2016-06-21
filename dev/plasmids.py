@@ -107,6 +107,7 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLA
         elif r1 * a0 < sum(a[:4]):
             if N_r >= 1:
                 N_r -= 1.
+                plasmids += 1.
 
         # Shouldn't do this
         else:
