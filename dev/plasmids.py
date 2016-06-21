@@ -27,14 +27,16 @@ if PLOTTING:
 if THREADED:
     import multiprocessing
 
-S_0 = 1.e3
-R_0 = 1.e3
+S_0 = 1.e4
+R_0 = 1.e1
 #Carrying capacity
 K = 1.e5
 #Maximum number of plasmids availab
-PLASMIDS = 1.e4
+PLASMIDS = 1.e5
 
-LABEL_X = .05
+SPACING = .01
+
+LABEL_X = .001
 LABEL_Y = .8
 
 timestamp = 0
@@ -46,7 +48,7 @@ MU1, MU2, ALPHA, T_MAX, S0, R0 = 0, 1, 2, 3, 4, 5
 def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLASMIDS, num=0):
 
     if PBAR:
-        writer = mpb.Writer((0,10+num))
+        writer = mpb.Writer((0,num))
         pbar = ProgressBar(fd=writer)
         pbar.start()
 
@@ -55,7 +57,7 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLA
 
     d1 = .3
 
-    spacing = .1
+    spacing = SPACING
     cur_t = 0
     #########################
     # Step 1 - Initialization
@@ -76,9 +78,9 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLA
         # print("NR: %f \t %f" % (N_r * (1- (N_s+N_r)/K) * mu1, N_r))
 
         a =[N_s * (1- (N_s+N_r)/K) * mu1,
-            N_s * (plasmids/_PLASMIDS) * alpha,
+            N_s * alpha,
             N_r * (1- (N_s+N_r)/K) * mu2,
-            N_s * d1]
+            N_r * d1]
         a0 = sum(a)
 
         #########################
@@ -122,7 +124,7 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLA
         #########################
         # Step 4 - Choose tau according to an exponential
         r2 = np.random.rand()
-        tau = -np.log(r2)/a0
+        tau = -np.log10(r2)/a0
         t += tau
         cur_t += tau
 
@@ -266,8 +268,8 @@ def stats(T, S, params, plot=True):
         err += [np.std(temp)]
         # print("%f %s\n" % (np.std(temp), temp))
 
-    mean = np.log(mean)
-    err = np.log(err)
+    mean = np.log10(mean)
+    err = np.log10(err)
 
     mean = map(lambda x: (0 if np.isinf(x) else x), mean)
     err = map(lambda x: (0 if np.isinf(x) else x), err)
@@ -281,6 +283,17 @@ def stats(T, S, params, plot=True):
         plt.errorbar(T[0][:minlen], mean, yerr=err, fmt='k-', linewidth=2)
 
     return T[0][:minlen], mean, err
+
+def annotate(params):
+
+    txt = plt.text(LABEL_X, LABEL_Y,
+        r'$\alpha$: %.2f' % params[0][ALPHA]+
+        '\n$\mu1/\mu2$: %.2f\n' % (params[0][MU1]/params[0][MU2]) +
+        "$S_0$ = %d, $R_0$ = %d"%(params[0][S0], params[0][R0]) +
+        "\n$K$ = %.0e "% K +
+        "\nPlasmids: %.0e" % PLASMIDS,
+        transform=plt.gca().transAxes)
+    # txt.draggable()
 
 
 
@@ -298,8 +311,8 @@ def x_vs_t(alphas, mu1, mu2s, t_max):
 
     series = list(("%.2f, %.2f" % (p[MU1]/p[MU2], p[2])) for p in params)
 
-    s = [np.log(np.array(a)) for a in S_pop]
-    r = [np.log(np.array(a)) for a in R_pop]
+    s = [np.log10(np.array(a)) for a in S_pop]
+    r = [np.log10(np.array(a)) for a in R_pop]
     # r = [np.array(a) for a in R_pop]
     # s = [np.array(a) for a in S_pop]
 
@@ -310,13 +323,8 @@ def x_vs_t(alphas, mu1, mu2s, t_max):
         linePlotData(T, s, series,
                     title = "S vs. t", xlabel="t", ylabel="log(S population)",
                     l_title = r"       $\mu1/\mu2$,   $\alpha$")
-        plt.text(LABEL_X, LABEL_Y,
-            r'$\alpha$: %.2f' % params[0][ALPHA]+
-            '\n$\mu1/\mu2$: %.2f\n' % (params[0][MU1]/params[0][MU2]) +
-            "$S_0$ = %d, $R_0$ = %d"%(params[0][S0], params[0][R0]) +
-            "\n$K$ = %.0e "% K +
-            "\nPlasmids: %.0e" % PLASMIDS,
-            transform=plt.gca().transAxes)
+        annotate(params)
+
 
     # stats(T, S_pop, params)
     # stats(T, R_pop, params)
@@ -340,7 +348,7 @@ def std_vs_t(alphas, mu1, mu2s, t_max):
         print(err)
 
         # plt.plot(T, err)
-        linePlotData([T], [np.log(err)], [None],
+        linePlotData([T], [np.log10(err)], [None],
                     title = "Std. Dev of S Population vs. t",
                     xlabel="t", ylabel="log(Std. dev)",
                     l_title = r"       $\mu1/\mu2$,   $\alpha$")
@@ -361,7 +369,7 @@ def x_vs_alpha(alphas, mu1, mu2s, t_max):
     series = unique( ("%.2f" % ( p[MU1] / p[MU2]) ) for p in params )
 
     # Pick out only final S values
-    s_pop = [np.log(a[-1]) for a in S_pop]
+    s_pop = [np.log10(a[-1]) for a in S_pop]
 
     alpha = [ p[ALPHA] for p in params]
 
@@ -397,7 +405,7 @@ def x_vs_mu(alphas, mu1, mu2s, t_max):
     T, S_pop, R_pop, params = run(alphas, mu1, mu2s, t_max)
 
     # Pick out only final S values
-    s_pop = [np.log(a[-1]) for a in S_pop]
+    s_pop = [np.log10(a[-1]) for a in S_pop]
 
     mu2s = [ p[MU1]/p[MU2] for p in params]
 
@@ -449,7 +457,7 @@ def main():
     # x_vs_t(alphas=[.3]*2, mu1=.8, mu2s=[.77]*2, t_max=15)
     # std_vs_t(alphas=[.1]*5, mu1=.8, mu2s=[.7]*6, t_max=10)
 
-    x_vs_t(alphas=np.linspace(.1,.3,2), mu1=.8, mu2s=np.linspace(.75,.78,2), t_max=20)
+    x_vs_t(alphas=[.4,.5], mu1=.8, mu2s=[.75], t_max=60)
     # x_vs_alpha(alphas=np.linspace(.01,.1,10), mu1=.8, mu2s=[.7, .74, .78], t_max=5)
     # x_vs_mu(alphas=np.linspace(.01,.1,6), mu1=.8, mu2s=np.linspace(.7,.78,10), t_max=10)
 
