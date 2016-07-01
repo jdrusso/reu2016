@@ -7,7 +7,7 @@
 
 # Set True to enable multiprocessing
 THREADED = True
-PBAR = False
+PBAR = True
 
 # Set True to enable matplotlib. Useful for running on cluster.
 PLOTTING = True
@@ -23,21 +23,22 @@ if PBAR:
 
 if PLOTTING:
     from matplotlib import pyplot as plt
+    import matplotlib.patches as mpatches
 
 if THREADED:
     import multiprocessing
 
-S_0 = 1.e4
-R_0 = 1.e1
+S_0 = 1.e3
+R_0 = 1.e3
 #Carrying capacity
-K = 1.e5
+K = 1.e4
 #Maximum number of plasmids availab
 PLASMIDS = 1.e5
 
-SPACING = .01
+SPACING = .2
 
-LABEL_X = .001
-LABEL_Y = .8
+LABEL_X = .1
+LABEL_Y = .1
 
 timestamp = 0
 
@@ -58,7 +59,7 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLA
     d1 = .3
 
     spacing = SPACING
-    cur_t = 0
+    cur_t = 1e10
     #########################
     # Step 1 - Initialization
 
@@ -78,7 +79,8 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLA
         # print("NR: %f \t %f" % (N_r * (1- (N_s+N_r)/K) * mu1, N_r))
 
         a =[N_s * (1- (N_s+N_r)/K) * mu1,
-            N_s * alpha,
+            # N_s * alpha,
+            N_s * (plasmids/_PLASMIDS) * alpha,
             N_r * (1- (N_s+N_r)/K) * mu2,
             N_r * d1]
         a0 = sum(a)
@@ -100,24 +102,26 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLA
             N_r += 1.
             plasmids -= 1.
 
-        # Reaction 3: Y -> 2Y
+        # Reaction 3: Y -> Y + X
         elif r1 * a0 < sum(a[:3]):
 
+            # Symmetric division - conserves plasmid number
+            # N_s += 1.
+
+            # Asymmetric division
             N_r += 1.
 
         # Reaction 4: Y -> 0
         elif r1 * a0 < sum(a[:4]):
             if N_r >= 1:
                 N_r -= 1.
-                plasmids += 1.
+                # plasmids += 1.
 
         # Shouldn't do this
         else:
-            print(r1 * a0)
-            print(N_s)
-            print(N_r)
-            print(sum(a[:5]))
-            print("error")
+            # print(r1 * a0)
+            print("%d %d error" % (N_s, N_r))
+            # print(sum(a[:5]))
             pass
 
 
@@ -147,7 +151,7 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLA
         # print(len(data))
         q.put((data, (mu1, mu2, alpha, t_max, s0, r0)))
         # q.put(('zz', 'zz'))
-        print("Data stored in queue")
+        # print("Data stored in queue")
 
         if PBAR:
             pbar.finish()
@@ -177,7 +181,7 @@ def run(alphas, mu1, mu2s, t_max):
             else:
                 data, p = gillespie(mu1, mu2, alpha, t_max)
 
-                t, x, y = [list(t) for t in zip(*data)]
+                t, x, y, = [list(t) for t in zip(*data)]
                 T += [t]
                 X += [x]
                 Y += [y]
@@ -241,8 +245,7 @@ def linePlotData(X, Y, Z, title='', xlabel='', ylabel='', l_title='', fit=False,
     plt.ylabel(ylabel)
 
 
-
-def stats(T, S, params, plot=True):
+def stats(T, S, params, plot=True, _fmt='k-', label=''):
 
     minlen = min([len(x) for x in S])
 
@@ -268,19 +271,16 @@ def stats(T, S, params, plot=True):
         err += [np.std(temp)]
         # print("%f %s\n" % (np.std(temp), temp))
 
-    mean = np.log10(mean)
-    err = np.log10(err)
+    # mean = np.log10(mean)
+    # err = np.log10(err)
 
     mean = map(lambda x: (0 if np.isinf(x) else x), mean)
     err = map(lambda x: (0 if np.isinf(x) else x), err)
-
-    # print(err)
-    # print(mean)
-    # mean = np.mean(S, 0)
+    plotted = None
 
     if PLOTTING and plot:
         # plt.errorbar(T[0][:minlen], (mean), yerr=(err), fmt='k-', linewidth=2)
-        plt.errorbar(T[0][:minlen], mean, yerr=err, fmt='k-', linewidth=2)
+        plt.errorbar(T[0][:minlen], mean, yerr=err, fmt=_fmt, label=label, linewidth=2)
 
     return T[0][:minlen], mean, err
 
@@ -297,37 +297,38 @@ def annotate(params):
 
 
 
-def x_vs_t(alphas, mu1, mu2s, t_max):
+def x_vs_t(alphas, mu1, mu2s, t_max, filename=None):
 
     T, S_pop, R_pop, params = run(alphas, mu1, mu2s, t_max)
 
     print("Finished runs.")
 
-    global timestamp
-    filename = "output/out_{}.dat".format(timestamp)
+    if filename is None:
+        global timestamp
+        filename = "output/out_{}.dat".format(timestamp)
     np.savetxt(filename, (np.array(T), np.array(S_pop)), fmt="%s",
         header="Alphas: %s | mu1: %s | mu2s: %s | t_max: %d" %
             (alphas, mu1, mu2s, t_max))
 
     series = list(("%.2f, %.2f" % (p[MU1]/p[MU2], p[2])) for p in params)
 
-    s = [np.log10(np.array(a)) for a in S_pop]
-    r = [np.log10(np.array(a)) for a in R_pop]
-    # r = [np.array(a) for a in R_pop]
-    # s = [np.array(a) for a in S_pop]
+    # s = [np.log10(np.array(a)) for a in S_pop]
+    # r = [np.log10(np.array(a)) for a in R_pop]
+    r = [np.array(a) for a in R_pop]
+    s = [np.array(a) for a in S_pop]
 
     print("Begining plotting.")
 
     if PLOTTING:
-        linePlotData(T, r, series, marker='--')
-        linePlotData(T, s, series,
-                    title = "S vs. t", xlabel="t", ylabel="log(S population)",
-                    l_title = r"       $\mu1/\mu2$,   $\alpha$")
+        # linePlotData(T, r, series, marker='--')
+        # linePlotData(T, s, series,
+        #             title = "S vs. t", xlabel="t", ylabel="log(S population)",
+        #             l_title = r"       $\mu1/\mu2$,   $\alpha$")
         annotate(params)
 
 
-    # stats(T, S_pop, params)
-    # stats(T, R_pop, params)
+    stats(T, S_pop, params, True, _fmt='r-', label="Susceptible")
+    stats(T, R_pop, params, True, _fmt='b-', label="Resistant")
 
 def std_vs_t(alphas, mu1, mu2s, t_max):
 
@@ -451,20 +452,37 @@ def unique(seq):
 
 def main():
 
+    #.10, .17, .25, .5
+    a = .50
+    filename="graphics/WellMixedFinal/linear_alpha/asymmetric_a%d" % (a*100)
+
     global timestamp
     timestamp = dt.datetime.now().strftime('%m%d_%H%M%S')
 
     # x_vs_t(alphas=[.3]*2, mu1=.8, mu2s=[.77]*2, t_max=15)
     # std_vs_t(alphas=[.1]*5, mu1=.8, mu2s=[.7]*6, t_max=10)
 
-    x_vs_t(alphas=[.4,.5], mu1=.8, mu2s=[.75], t_max=60)
+    # x_vs_t(alphas=[.1], mu1=.8, mu2s=[.75]*20, t_max=20)
+
+    # x_vs_t(alphas=[.10], mu1=.8, mu2s=[.75]*20, t_max=20, filename=None)
+    # x_vs_t(alphas=[.17], mu1=.8, mu2s=[.75]*20, t_max=20, filename=None)
+    x_vs_t(alphas=[a], mu1=.8, mu2s=[.75]*20, t_max=20, filename=filename+'.dat')
+
+
     # x_vs_alpha(alphas=np.linspace(.01,.1,10), mu1=.8, mu2s=[.7, .74, .78], t_max=5)
     # x_vs_mu(alphas=np.linspace(.01,.1,6), mu1=.8, mu2s=np.linspace(.7,.78,10), t_max=10)
 
-    # plt.gca().legend().set_visible(False)
+    ax = plt.gca()
+    ax.set_ylim([800,K])
+    ax.set_yscale('log')
+    ax.yaxis.set_tick_params(which='minor', width=2, length=6)
+    ax.legend()
+
+    # plt.gca().legend().set_visible(True)
     # plt.savefig('output/out_%s.pdf' % timestamp)
+    plt.savefig(filename+'.pdf')
     # plt.close()
-    plt.show()
+    # plt.show()
     return
 
 if __name__ == "__main__":
