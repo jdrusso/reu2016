@@ -10,7 +10,9 @@ THREADED = True
 PBAR = True
 
 # Set True to enable matplotlib. Useful for running on cluster.
-PLOTTING = True
+PLOTTING = False
+
+SYMMETRIC = True
 
 import math
 import numpy as np
@@ -33,9 +35,9 @@ R_0 = 1.e3
 #Carrying capacity
 K = 1.e4
 #Maximum number of plasmids availab
-PLASMIDS = 1.e5
+PLASMIDS = 1.e4
 
-SPACING = .2
+SPACING = .1
 
 LABEL_X = .1
 LABEL_Y = .1
@@ -105,17 +107,18 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLA
         # Reaction 3: Y -> Y + X
         elif r1 * a0 < sum(a[:3]):
 
-            # Symmetric division - conserves plasmid number
-            # N_s += 1.
-
-            # Asymmetric division
-            N_r += 1.
+            if SYMMETRIC:
+                # Symmetric division - conserves plasmid number
+                N_s += 1.
+            else:
+                # Asymmetric division
+                N_r += 1.
 
         # Reaction 4: Y -> 0
         elif r1 * a0 < sum(a[:4]):
             if N_r >= 1:
                 N_r -= 1.
-                # plasmids += 1.
+                plasmids += 1.
 
         # Shouldn't do this
         else:
@@ -306,9 +309,13 @@ def x_vs_t(alphas, mu1, mu2s, t_max, filename=None):
     if filename is None:
         global timestamp
         filename = "output/out_{}.dat".format(timestamp)
-    np.savetxt(filename, (np.array(T), np.array(S_pop)), fmt="%s",
-        header="Alphas: %s | mu1: %s | mu2s: %s | t_max: %d" %
-            (alphas, mu1, mu2s, t_max))
+    np.savetxt(filename,
+        (T, S_pop, R_pop, params),
+        # (np.array(T), np.array(S_pop), np.array(R_pop), np.array(params)),
+        fmt='%r',
+        delimiter='\n\n\n',
+        header="Alphas\tmu1\tmu2s\tt_max\tK\tP0\tRuns\tSymmetric\n%s|%s|%s|%d|%d|%d|%d|%r" %
+            (alphas, mu1, mu2s, t_max, K, PLASMIDS, len(T), SYMMETRIC))
 
     series = list(("%.2f, %.2f" % (p[MU1]/p[MU2], p[2])) for p in params)
 
@@ -467,22 +474,24 @@ def main():
     # x_vs_t(alphas=[.10], mu1=.8, mu2s=[.75]*20, t_max=20, filename=None)
     # x_vs_t(alphas=[.17], mu1=.8, mu2s=[.75]*20, t_max=20, filename=None)
     x_vs_t(alphas=[a], mu1=.8, mu2s=[.75]*20, t_max=20, filename=filename+'.dat')
+    # x_vs_t(alphas=[a], mu1=.8, mu2s=[.75]*20, t_max=20, filename=None)
 
 
     # x_vs_alpha(alphas=np.linspace(.01,.1,10), mu1=.8, mu2s=[.7, .74, .78], t_max=5)
     # x_vs_mu(alphas=np.linspace(.01,.1,6), mu1=.8, mu2s=np.linspace(.7,.78,10), t_max=10)
 
-    ax = plt.gca()
-    ax.set_ylim([800,K])
-    ax.set_yscale('log')
-    ax.yaxis.set_tick_params(which='minor', width=2, length=6)
-    ax.legend()
+    if PLOTTING:
+        ax = plt.gca()
+        ax.set_ylim([800,K])
+        ax.set_yscale('log')
+        ax.yaxis.set_tick_params(which='minor', width=2, length=6)
+        ax.legend()
 
-    # plt.gca().legend().set_visible(True)
-    # plt.savefig('output/out_%s.pdf' % timestamp)
-    plt.savefig(filename+'.pdf')
-    # plt.close()
-    # plt.show()
+        # plt.gca().legend().set_visible(True)
+        # plt.savefig('output/out_%s.pdf' % timestamp)
+        # plt.savefig(filename+'.pdf')
+        # plt.close()
+        plt.show()
     return
 
 if __name__ == "__main__":
