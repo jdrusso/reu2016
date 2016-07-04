@@ -16,7 +16,6 @@ def strip_brackets(_list):
 
     # Strip first and last characters, which should be brackets
     for col in l:
-
         col[0] = col[0][1:] if col[0][0] in brackets else col[0]
         col[-1] = col[-1][:-1]  if col[-1][-1] in brackets else col[-1]
 
@@ -24,7 +23,8 @@ def strip_brackets(_list):
 
 
 
-# Takes in a string of form '[1,2,3,4,5]' and converts it to a list
+# Takes in a string of form '[1,2,3,4,5]' and converts it to a list of the specified
+#   data type.
 def str_to_list(string, dtype=float):
 
     # Ignore first and last characters to strip brackets
@@ -57,7 +57,7 @@ def parse_header(header):
         "runs":int(headerdata[6]),
         "symmetric":bool(headerdata[7])
         }
-    print('%d runs ' % headerDict['runs'])
+    print('Parsing data from %d runs..' % headerDict['runs'])
 
     return headerDict
 
@@ -70,7 +70,6 @@ def parse(filename):
 
     # Import data
     data = np.loadtxt(infile, dtype=list, delimiter=',')
-    # print(data)
 
     # Get header data
     header = open(infile).readlines()[1]
@@ -104,11 +103,13 @@ def parse(filename):
 
 # Generate annotation text for legend
 def annotate(params, headerdict):
-    annotation = r'$\alpha$: %.2f' % params[0][ALPHA] +\
-        '\n$\mu1/\mu2$: %.2f\n' % (params[0][MU1]/params[0][MU2]) +\
-        "$S_0$: %.0e, $R_0$: %.0e"%(params[0][S0], params[0][R0]) +\
+    annotation = \
+        r'$\alpha$: %.2f' % params[0][ALPHA] +\
+        '\n$\mu1/\mu2$: %.2f' % (params[0][MU1]/params[0][MU2]) +\
+        "\n$S_0$: %.0e" % params[0][S0] +\
+        "\n$R_0$: %.0e" % params[0][R0] +\
         "\n$P_0$: %.0e" % headerdict['Plasmids'] +\
-        "\n$K $ : %.0e " % headerdict['K']
+        "\n$K $ : %.0e\n" % headerdict['K']
 
     sym = 'Symmetric' if headerdict['symmetric'] else 'Asymmetric'
 
@@ -133,11 +134,9 @@ def plot(x, y, params, headerdict, fmt='k-', stat=False, label="Population"):
         minlen = min([len(c) for c in y])
         for i in range(len(y)):
             y[i] = y[i][:minlen]
-
         y = np.array(y)
         y.reshape((len(y),minlen))
-        print(y)
-        # minlen = len(y)
+
         mean, err = [], []
 
         # Step through the lists, creating a list of averages/errors for each
@@ -148,8 +147,8 @@ def plot(x, y, params, headerdict, fmt='k-', stat=False, label="Population"):
             err += [np.std(temp)]
 
         # Clean up any infinities
-        mean = map(lambda x: (0 if np.isinf(x) else x), mean)
-        err = map(lambda x: (0 if np.isinf(x) else x), err)
+        mean = map(lambda x: (1 if np.isinf(x) or x<1 else x), mean)
+        err = map(lambda x: (1 if np.isinf(x) else x), err)
 
         plt.errorbar(x[0][:minlen], mean, yerr=err, fmt=fmt, label=label, linewidth=2)
 
@@ -163,15 +162,18 @@ def plot(x, y, params, headerdict, fmt='k-', stat=False, label="Population"):
 
 def main():
     infile = 'graphics/test.dat'
-    # infile = 'graphics/WellMixedFinal/linear_alpha/asymmetric_a50.dat'
 
     Ts, S_pops, R_pops, P, params, headerdict = parse(infile)
 
     plot(Ts, S_pops, params, headerdict, stat=True, fmt='r-', label="Susceptible")
     plot(Ts, R_pops, params, headerdict, stat=True, fmt='b-', label="Resistant")
     plot(Ts, P, params, headerdict, stat=True, fmt='g-', label="Plasmids")
-    # print(P)
 
+
+
+    max_y = max(max([max(x) for x in [S_pops, R_pops, P]]))
+    min_y = min(min([min(x) for x in [S_pops, R_pops, P]]))
+    plt.gca().set_ylim([.8,max_y*2])
     plt.show()
 
 
