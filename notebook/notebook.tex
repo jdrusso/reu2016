@@ -13,7 +13,7 @@
 \usepackage{booktabs,array} % Packages for tables
 \usepackage{enumitem}
 
-\newcommand{\obj}[1]{\textbf{Objective:} #1}
+\newcommand{\obj}[1]{\textbf{Objective:} #1\\}
 \newcommand{\commit}[1]{\footnote{Git commit \texttt{#1}}}
 \newcommand{\reaction}[4][]{
   \begin{equation}
@@ -113,7 +113,7 @@ resistance, and go from there.
 \end{itemize}
 
 
-\subsection*{mutation}
+\subsection*{Mutation}
 \begin{itemize}
   \item Low probability of mutating resistances
   \item Some mutations can produce enzymes that render antibiotics inert
@@ -240,8 +240,8 @@ From this, we can quickly see that as per the plasmid paradox mentioned before,
 $\mu_1 > \mu_2$. In addition, we can determine the cost to fitness of owning a
 plasmid to be
 \begin{equation}
-\frac{\mu_1}{\mu_2}
-\end{equation}.
+\frac{\mu_1}{\mu_2}.
+\end{equation}
 
 However, the ratio of X to Y will depend significantly on $\alpha$, the probability
 of transformation. We can rewrite the above reactions as differential equations
@@ -287,7 +287,7 @@ I replace the initial two (birth and death) reactions with three, bacteria
 reproduction, transformation, and plasmid carrier reproduction.
 
 I've duplicated the code from the initial simulation to
- \texttt{summer2016/dev/plasmids.py}, where I'll begin modifying it.
+\texttt{summer2016/dev/plasmids.py}, where I'll begin modifying it.
 
 I've redefined the reactions, and made the program keep track of X and Y
 (bacteria and carrier) populations separately.
@@ -425,6 +425,155 @@ S(t) = S_0\:e^{\left(b_S - \alpha\right) t}.
 \end{align*}
 
 This is consistent with my results from Mathematica.
+
+\labday{June 9, 2016}
+
+\section*{Skype with Prof. Dong}
+\begin{itemize}
+\item We discussed that it would be more useful to view absolute S population, rather
+than plotting a relative percentage.
+\item It'd be useful to characterize fluctuations by plotting trajectories for
+$X_0 = 1000$, $X_0 = 1000000$, and the model.
+\item We'd like to look at longer timescales, to see how long until X dies out
+or until Y dominates. The issue with this is the time it takes to run longer
+simulation.
+\item The X death timescale should be $\mu_1 - \alpha$.
+\item We'd like to use a Hill function for $\alpha$ to add some dependence on
+$X_0$, since realistically the number of available plasmids would decrease as
+the population increases and uses them up.
+\item Michaelis-Menten kinetics are used to relate reaction rates to substrate
+concentration. This is essentially what we'd be doing with Hill functions and
+alpha. (Are we doing the reverse, relating reaction rate to reactant concentration?)
+\item We'd also like to calculate equilibrium conditions for S and R populations
+(see Michaelis-Menten equilibrium approximation)
+\vspace{9mm}
+\item In bacteria populations, the \textbf{carrying capacity} of the environment
+determines the upper limit on the population -- we'd like to include this.
+\item This would change the DE for population growth to
+\begin{equation}
+\frac{dS}{dt} = b_s \left( 1 - \frac{(S+R)}{k}\right) - \alpha S
+\end{equation}
+where $k$ is the environment's carrying capacity, the maximum number of individuals
+it can sustain. This is logistic growth.
+\item $\frac{dS}{dt} = b_s \left( 1 - \frac{(S+R)}{k}\right) - \alpha S$ has
+solutions at $S=0,k$. If we start somewhere in between, what determines which
+equilibrium point we will go to?
+\item We can see this with Kinetic Monte Carlo by doing time traces at
+different $X_0$s and seeing which solution it goes to.
+\vspace{9mm}
+\item We'd also like to incorporate a death rate, and calculate the equilibrium
+point with that.
+\end{itemize}
+
+\labday{June 13, 2016}
+\obj{Refactor code to work more reliably, intuitively, and efficiently.}
+
+The first version of \texttt{plasmids.py}\commit{bd8b069} did not accurately
+track one population of bacteria to explore time evolution
+of a system. Instead, it would do an independent simulation to each time step,
+and plot the results of that. We don't want that, we want to track one simulation
+to examine the dynamics in it, so I factored that in when rewriting.
+
+I've committed my rewrite\commit{3034cd6}, which addresses this issue in addition
+to making a slightly cleaner method for plotting data.
+
+\labday{June 13, 2016}
+
+\section*{Skype with Prof. Dong}
+We began by reviewing some of my generated plots, and detailing how we could
+improve them.
+% \begin{itemize}
+% \end{itemize}
+
+\obj{Use equations for $S(t)$ and $R(t)$ to find when $S=R$. This will help
+us find an interesting parameter range to use.}
+
+By setting $\frac{S(t)}{R(t)}=1$ and solving for $t$, we can find that the
+crossover time where $R=S$ is given by
+\begin{equation}
+t = \frac{1}{b_R - b_S + \alpha} \ln\left( \frac{b_R - b_S + 2 \alpha}{\alpha}\right).
+\end{equation}
+
+This can be analyzed to find interesting parameter ranges, where the crossover
+time is within the time spans we're looking at. Until now, I've typically been
+using values of $\mu_1=0.8$, $\mu_2=.7 { to } .78$ and $\alpha=0.1 { to } 0.1$.
+However, these yield a crossover time of $32.4 - 5$. This is much longer than
+I've let my simulations run (because of time constraints), and so I would've
+never seen this behavior.
+
+By changing $\alpha$ to $.1 \text{ to } .3$ this time scale changes to
+ $t = 9.33 \text{ to } 2.55$, a more reasonable value that is within the timescales
+we're looking at.
+
+\experiment{conjug}
+\subsection*{Multiprocessing}
+As we start to move up to more combinations of parameters, longer timesteps,
+and more simulation runs, computation time becomes much more important.
+
+In order to make the simulation a little faster, I've implemented
+multiprocessing\commit{2380518f}.
+So, when combinations of parameters are run, the program will break off each
+Gillespie algorithm run to its own process.\\
+
+\begin{tabular}{l|c|c|c|r|r|}
+  \hline
+System & Parallelized & $S_0$ & $T_max$ & Runtime(s) & Gillespie Runs\\
+\hline
+Local & Y & 100 & 10 & 00.64, 00.59, 00.52, 00.57 & 1\\
+Local & Y & 100 & 15 & 09.17, 12.55, 09.40, 08.94 & 1\\
+Local & Y & 100 & 16 & 16.82, 14.85, 18.12, 18.85 & 1\\
+Local & Y & 100 & 17 & 45.51, 31.73, 37.71, 38.26 & 1\\
+Local & Y & 100 & 18 & 71.21, 79.51  & 1\\
+\hline
+Remote & Y & 100 & 16 & 64.392 & 9\\
+Local & Y & 100 & 16 & 240 & 9\\
+Local & N & 100 & 16 & 757 & 9\\
+\hline
+\end{tabular}
+
+Not shown, the linux remote is roughly 1/2 as fast for a single run as my local
+system.
+
+\labday{June 20, 2016}
+
+\begin{itemize}
+\item Added plots of R population
+    * Now focusing mostly on X vs T, have found interesting param range
+\item Added some sanity checks in code for making sure the populations are positive before
+  removing members from them.
+\item Changed from log base $e$ to log10
+\end{itemize}
+
+\labday{June 28, 2016}
+
+\obj{Clean up results and prepare presentation quality visualizations of
+data from simulation.}
+
+I'm essentially done with the code for simulating the well-mixed case, so I'm
+going to take some time to collect my results from the simulation. I will be
+collecting data and plots of population vs time of both asymmetric and symmetric
+cases for the following:
+\begin{itemize}
+  \item Constant $\alpha$
+  \item Linear $\alpha$
+  \item Recycling $\alpha$
+\end{itemize}
+I'd also like to add code to plot the total number of plasmids.
+
+The plots for recycled and constant alpha seem the same.
+
+
+
+\labday{June 29, 2016}
+
+\obj{Separate plotting code from simulation code}
+
+
+
+
+\labday{June 30, 2016}
+
+\obj{Begin planning for simulation on a lattice}
 
 %------------------------------------------------------------------------------
 %	BIBLIOGRAPHY

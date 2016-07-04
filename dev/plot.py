@@ -169,7 +169,8 @@ def main():
     plot(Ts, R_pops, params, headerdict, stat=True, fmt='b-', label="Resistant")
     plot(Ts, P, params, headerdict, stat=True, fmt='g-', label="Plasmids")
 
-
+    plt.xlabel('Time step')
+    plt.ylabel('Population size')
 
     max_y = max(max([max(x) for x in [S_pops, R_pops, P]]))
     min_y = min(min([min(x) for x in [S_pops, R_pops, P]]))
