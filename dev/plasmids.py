@@ -143,7 +143,7 @@ def gillespie(mu1, mu2, alpha, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLA
                 ns == 10e-10
             if nr == 1:
                 nr == 10e-10
-            data.append([t, ns, nr])
+            data.append([t, ns, nr, plasmids])
             cur_t = 0
 
             if PBAR:
@@ -165,7 +165,7 @@ def run(alphas, mu1, mu2s, t_max):
 
     print("Beginning simulation runs...")
 
-    T, X, Y, params = [], [], [], []
+    T, X, Y, P, Params = [], [], [], [], []
     if THREADED:
         jobs = []
         q = multiprocessing.Queue()
@@ -182,24 +182,26 @@ def run(alphas, mu1, mu2s, t_max):
                 workers += 1
 
             else:
-                data, p = gillespie(mu1, mu2, alpha, t_max)
+                data, params = gillespie(mu1, mu2, alpha, t_max)
 
-                t, x, y, = [list(t) for t in zip(*data)]
+                t, x, y, p = [list(t) for t in zip(*data)]
                 T += [t]
                 X += [x]
                 Y += [y]
-                params += [p]
+                P += [p]
+                Params += [params]
 
 
     if THREADED:
         print("Started %d workers." % workers)
-        for data, p in iter(q.get, None):
-            t, x, y = [list(t) for t in zip(*data)]
+        for data, params in iter(q.get, None):
+            t, x, y, p = [list(t) for t in zip(*data)]
 
             T += [t]
             X += [x]
             Y += [y]
-            params += [p]
+            P += [p]
+            Params += [params]
 
             print("Completed.")
             workers -= 1
@@ -210,7 +212,7 @@ def run(alphas, mu1, mu2s, t_max):
         for job in jobs:
             job.join()
 
-    return T, X, Y, params
+    return T, X, Y, P, Params
 
 def linePlotData(X, Y, Z, title='', xlabel='', ylabel='', l_title='', fit=False,
                     marker='-'):
@@ -302,7 +304,7 @@ def annotate(params):
 
 def x_vs_t(alphas, mu1, mu2s, t_max, filename=None):
 
-    T, S_pop, R_pop, params = run(alphas, mu1, mu2s, t_max)
+    T, S_pop, R_pop, P, params = run(alphas, mu1, mu2s, t_max)
 
     print("Finished runs.")
 
@@ -310,7 +312,7 @@ def x_vs_t(alphas, mu1, mu2s, t_max, filename=None):
         global timestamp
         filename = "output/out_{}.dat".format(timestamp)
     np.savetxt(filename,
-        (T, S_pop, R_pop, params),
+        (T, S_pop, R_pop, P, params),
         # (np.array(T), np.array(S_pop), np.array(R_pop), np.array(params)),
         fmt='%r',
         delimiter='\n\n\n',
