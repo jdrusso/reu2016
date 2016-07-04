@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 from matplotlib import pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
@@ -12,13 +12,22 @@ def strip_brackets(_list):
     brackets = '{}[]()'
 
     # Make sure _list is a list, not an immutable tuple
-    l = [list(i) for i in _list]
+    l = [str(i) for i in _list]
 
+    print("L is")
+    print(l)
     # Strip first and last characters, which should be brackets
-    for col in l:
-        col[0] = col[0][1:] if col[0][0] in brackets else col[0]
-        col[-1] = col[-1][:-1]  if col[-1][-1] in brackets else col[-1]
+    l = [col[1:-1].split(', ') for col in l]
+    # for col in _list:
+    #     print(col)
+    #     print("Col[0] is ")
+    #     print(col[0])
+    #     col[:] = col[1:-1]
+        # col[0] = col[0][1:] if col[0][0] in brackets else col[0]
+        # col[-1] = col[-1][:-1]  if col[-1][-1] in brackets else col[-1]
 
+    print("Final l is")
+    print(l)
     return l
 
 
@@ -69,27 +78,24 @@ def parse(filename):
 
 
     # Import data
-    data = np.loadtxt(infile, dtype=list, delimiter=',')
+    data = np.genfromtxt(infile, dtype=str, delimiter='\n\n').astype(str)
+    # data = [np.array(map(int, line.split())) for line in open(infile)]
 
     # Get header data
     header = open(infile).readlines()[1]
     headerdict = parse_header(header)
     runs = headerdict['runs']
 
+    # print(data[0])
+
 
     # Parse data back into variables (lists of lists for each run)
-    Ts = list(data[0:runs])
-    S_pops = list(data[runs:runs*2])
-    R_pops = list(data[runs*2:runs*3])
-    P = list(data[runs*3:runs*4])
-    params = list(data[runs*4:])            #(mu1, mu2, alpha, t_max, s0, r0)
-
-
     # Strip leading and trailing brackets
-    for l in [Ts, S_pops, R_pops, P, params]:
-
-        # Using a list slice modifies the list in place instead of creating a new list
-        l[:] = strip_brackets(l)
+    Ts = strip_brackets(data[::runs])
+    S_pops = strip_brackets(data[1::runs])
+    R_pops = strip_brackets(data[2::runs])
+    P = strip_brackets(data[3::runs])
+    params = strip_brackets(data[4::runs])    #(mu1, mu2, alpha, t_max, s0, r0)
 
     Ts = [[float(x) for x in y] for y in Ts]
     S_pops = [[int(float(x)) for x in y] for y in S_pops]
@@ -147,8 +153,8 @@ def plot(x, y, params, headerdict, fmt='k-', stat=False, label="Population"):
             err += [np.std(temp)]
 
         # Clean up any infinities
-        mean = map(lambda x: (1 if np.isinf(x) or x<1 else x), mean)
-        err = map(lambda x: (1 if np.isinf(x) else x), err)
+        mean = list(map(lambda x: (1 if np.isinf(x) or x<1 else x), mean))
+        err = list(map(lambda x: (1 if np.isinf(x) else x), err))
 
         plt.errorbar(x[0][:minlen], mean, yerr=err, fmt=fmt, label=label, linewidth=2)
 
@@ -175,7 +181,7 @@ def main():
     max_y = max(max([max(x) for x in [S_pops, R_pops, P]]))
     min_y = min(min([min(x) for x in [S_pops, R_pops, P]]))
     plt.gca().set_ylim([.8,max_y*2])
-    plt.show()
+    # plt.show()
 
 
 if __name__ == '__main__':

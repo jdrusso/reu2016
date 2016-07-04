@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 # Proof-of-concept Python implementation of Gillespie algorithm
 #   for results dynamics simulation.
@@ -7,7 +7,7 @@
 
 # Set True to enable multiprocessing
 THREADED = True
-PBAR = True
+PBAR = False
 
 # Set True to enable matplotlib. Useful for running on cluster.
 PLOTTING = False
@@ -22,7 +22,7 @@ import datetime as dt
 
 if PBAR:
     import multi_progress as mpb
-    from progressbar import ProgressBar
+    from progressbar3.progressbar import ProgressBar
 
 if PLOTTING:
     from matplotlib import pyplot as plt
@@ -218,7 +218,7 @@ def run(alphas, mu1, mu2s, t_max, filename=None):
     print("Saving data to %s" % filename)
 
     np.savetxt(filename,
-        (T, X, Y, P, Params),
+        np.transpose((T, X, Y, P, Params)),
         fmt='%r',
         delimiter='\n\n\n',
         header="Alphas\tmu1\tmu2s\tt_max\tK\tP0\tRuns\tSymmetric\n%s|%s|%s|%d|%d|%d|%d|%r" %
