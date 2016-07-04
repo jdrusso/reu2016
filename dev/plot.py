@@ -57,6 +57,7 @@ def parse_header(header):
         "runs":int(headerdata[6]),
         "symmetric":bool(headerdata[7])
         }
+    print('%d runs ' % headerDict['runs'])
 
     return headerDict
 
@@ -81,21 +82,23 @@ def parse(filename):
     Ts = list(data[0:runs])
     S_pops = list(data[runs:runs*2])
     R_pops = list(data[runs*2:runs*3])
-    params = list(data[runs*3:])            #(mu1, mu2, alpha, t_max, s0, r0)
+    P = list(data[runs*3:runs*4])
+    params = list(data[runs*4:])            #(mu1, mu2, alpha, t_max, s0, r0)
 
 
     # Strip leading and trailing brackets
+    for l in [Ts, S_pops, R_pops, P, params]:
 
-    for l in [Ts, S_pops, R_pops, params]:
         # Using a list slice modifies the list in place instead of creating a new list
-        l[0:] = strip_brackets(l)
+        l[:] = strip_brackets(l)
 
     Ts = [[float(x) for x in y] for y in Ts]
     S_pops = [[int(float(x)) for x in y] for y in S_pops]
     R_pops = [[int(float(x)) for x in y] for y in R_pops]
+    P = [[int(float(x)) for x in y] for y in P]
     params = [[float(x) for x in y] for y in params]
 
-    return Ts, S_pops, R_pops, params, headerdict
+    return Ts, S_pops, R_pops, P, params, headerdict
 
 
 
@@ -126,9 +129,15 @@ def plot(x, y, params, headerdict, fmt='k-', stat=False, label="Population"):
 
     if stat:
 
-        y = np.array(y)
         # Make sure we don't iterate past the shortest array of data
         minlen = min([len(c) for c in y])
+        for i in range(len(y)):
+            y[i] = y[i][:minlen]
+
+        y = np.array(y)
+        y.reshape((len(y),minlen))
+        print(y)
+        # minlen = len(y)
         mean, err = [], []
 
         # Step through the lists, creating a list of averages/errors for each
@@ -142,7 +151,7 @@ def plot(x, y, params, headerdict, fmt='k-', stat=False, label="Population"):
         mean = map(lambda x: (0 if np.isinf(x) else x), mean)
         err = map(lambda x: (0 if np.isinf(x) else x), err)
 
-        plt.errorbar(x[0], mean, yerr=err, fmt=fmt, label=label, linewidth=2)
+        plt.errorbar(x[0][:minlen], mean, yerr=err, fmt=fmt, label=label, linewidth=2)
 
     else:
         plt.plot(x, y, fmt=fmt)
@@ -153,12 +162,15 @@ def plot(x, y, params, headerdict, fmt='k-', stat=False, label="Population"):
 
 
 def main():
-    infile = 'graphics/WellMixedFinal/linear_alpha/asymmetric_a50.dat'
+    infile = 'graphics/test.dat'
+    # infile = 'graphics/WellMixedFinal/linear_alpha/asymmetric_a50.dat'
 
-    Ts, S_pops, R_pops, params, headerdict = parse(infile)
+    Ts, S_pops, R_pops, P, params, headerdict = parse(infile)
 
     plot(Ts, S_pops, params, headerdict, stat=True, fmt='r-', label="Susceptible")
     plot(Ts, R_pops, params, headerdict, stat=True, fmt='b-', label="Resistant")
+    plot(Ts, P, params, headerdict, stat=True, fmt='g-', label="Plasmids")
+    # print(P)
 
     plt.show()
 
