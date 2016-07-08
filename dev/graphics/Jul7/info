@@ -1,0 +1,12 @@
+Const
+S0 = 1e3
+R0 = 1e3
+P0 = 1e5
+K  = 1e4
+d  = .3
+
+
+Linear
+Same
+
+Recycled
