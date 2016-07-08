@@ -14,20 +14,9 @@ def strip_brackets(_list):
     # Make sure _list is a list, not an immutable tuple
     l = [str(i) for i in _list]
 
-    # print("L is")
-    # print(l)
     # Strip first and last characters, which should be brackets
     l = [col[1:-1].split(', ') for col in l]
-    # for col in _list:
-    #     print(col)
-    #     print("Col[0] is ")
-    #     print(col[0])
-    #     col[:] = col[1:-1]
-        # col[0] = col[0][1:] if col[0][0] in brackets else col[0]
-        # col[-1] = col[-1][:-1]  if col[-1][-1] in brackets else col[-1]
 
-    # print("Final l is")
-    # print(l)
     return l
 
 
@@ -48,8 +37,9 @@ def str_to_list(string, dtype=float):
 # Parse data from header of data file
 def parse_header(header):
 
+    print("Parsing header data..")
+
     headerdata = header[2:].split('|')
-    print(headerdata)
     alphas = str_to_list(headerdata[0])
     mu1 = float(headerdata[1])
     mu2s = str_to_list(headerdata[2])
@@ -67,7 +57,7 @@ def parse_header(header):
         "runs":int(headerdata[6]),
         "symmetric":bool(headerdata[7][:-1])
         }
-    print(headerDict['symmetric'])
+    # print(headerDict['symmetric'])
     print('Parsing data from %d runs..' % headerDict['runs'])
 
     return headerDict
@@ -88,7 +78,7 @@ def parse(filename):
     headerdict = parse_header(header)
     runs = headerdict['runs']
 
-    # print(data[0])
+    print("Parsing logged data..")
 
 
     # Parse data back into variables (lists of lists for each run)
@@ -169,7 +159,8 @@ def plot(x, y, params, headerdict, fmt='k-', stat=False, label="Population"):
 
 
 def main():
-    infile = 'graphics/test.dat'
+
+    infile = '/home/jd/research/summer2016/dev/graphics/test.dat'
 
     Ts, S_pops, R_pops, P, params, headerdict = parse(infile)
 
@@ -177,13 +168,13 @@ def main():
     plot(Ts, R_pops, params, headerdict, stat=True, fmt='b-', label="Resistant")
     plot(Ts, P, params, headerdict, stat=True, fmt='g-', label="Plasmids")
 
-    plt.xlabel('Time step')
+    plt.xlabel('Time steps')
     plt.ylabel('Population size')
 
     max_y = max(max([max(x) for x in [S_pops, R_pops, P]]))
     min_y = min(min([min(x) for x in [S_pops, R_pops, P]]))
     plt.gca().set_ylim([.8,max_y*2])
-    plt.show()
+    plt.show(block=True)
 
 
 if __name__ == '__main__':
