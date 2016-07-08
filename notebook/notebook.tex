@@ -602,6 +602,20 @@ equations must also be revised.
 \frac{dP}{dt} & = -\alpha P
 \end{align}
 
+These all assume symmetric divison for R cells, in other words that
+$R \rightarrow 2R$. However, to conserve number of plasmids, this reaction is
+actually the asymmetric: $R \rightarrow S + R$. To include this in the equations
+for the S and R populations, a term must be moved from the R to S equation.
+
+\begin{align}
+  \frac{dS}{dt} & = \mu_2 \left(1 - \frac{S + R}{K}\right)R +
+  \mu_1 \left(1 - \frac{S + R}{K}\right)S - \alpha
+  \left( \frac{P}{P_0} \right) S \\
+\frac{dR}{dt} & =  \alpha S  \left( \frac{P}{P_0} \right) - \delta R \\
+\frac{dP}{dt} & = -\alpha P
+\end{align}
+
+
 %------------------------------------------------------------------------------
 %	BIBLIOGRAPHY
 %------------------------------------------------------------------------------
