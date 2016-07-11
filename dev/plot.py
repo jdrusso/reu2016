@@ -2,6 +2,7 @@
 from matplotlib import pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
+import sys, getopt
 
 MU1, MU2, ALPHA, T_MAX, S0, R0 = 0, 1, 2, 3, 4, 5
 
@@ -37,7 +38,7 @@ def str_to_list(string, dtype=float):
 # Parse data from header of data file
 def parse_header(header):
 
-    print("Parsing header data..")
+    # print("Parsing header data..")
 
     headerdata = header[2:].split('|')
     alphas = str_to_list(headerdata[0])
@@ -156,17 +157,45 @@ def plot(x, y, params, headerdict, fmt='k-', stat=False, label="Population"):
     # Make legend
     ax.legend(loc='best', title=annotate(params, headerdict)).draggable()
 
+    return mean, err
 
 
-def main():
+
+def main(argv):
 
     infile = '/home/jd/research/summer2016/dev/graphics/test.dat'
 
+    # Take input file argument
+    try:
+        opts, args = getopt.getopt(argv,"hi",["ifile="])
+    except getopt.GetoptError:
+        print('plot.py -i <inputfile>')
+        sys.exit(2)
+
+    for opt, arg in opts:
+        if opt == '-h':
+            print('test.py -i <inputfile>')
+            sys.exit()
+        elif opt in ("-i", "--ifile"):
+            infile = args[0]
+            print("Input file is %s " % infile)
+
+
+
     Ts, S_pops, R_pops, P, params, headerdict = parse(infile)
 
-    plot(Ts, S_pops, params, headerdict, stat=True, fmt='r-', label="Susceptible")
-    plot(Ts, R_pops, params, headerdict, stat=True, fmt='b-', label="Resistant")
-    plot(Ts, P, params, headerdict, stat=True, fmt='g-', label="Plasmids")
+
+    s_mean, s_err = plot(Ts, S_pops, params, headerdict, stat=True, fmt='r-', label="Susceptible")
+    r_mean, r_err = plot(Ts, R_pops, params, headerdict, stat=True, fmt='b-', label="Resistant")
+    p_mean, p_err = plot(Ts, P, params, headerdict, stat=True, fmt='g-', label="Plasmids")
+
+    print("Average long-term S: %d +- %f \n\
+Average long-term R: %d +- %f \n\
+Average long-term P: %d +- %f" %
+        (s_mean[-1], s_err[-1],
+        r_mean[-1], r_err[-1],
+        p_mean[-1], p_err[-1]))
+
 
     plt.xlabel('Time steps')
     plt.ylabel('Population size')
@@ -174,8 +203,9 @@ def main():
     max_y = max(max([max(x) for x in [S_pops, R_pops, P]]))
     min_y = min(min([min(x) for x in [S_pops, R_pops, P]]))
     plt.gca().set_ylim([.8,max_y*2])
+    plt.gca().set_ylim([900,1e4])
     plt.show(block=True)
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
