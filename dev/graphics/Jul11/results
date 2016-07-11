@@ -1,0 +1,31 @@
+a = 0.10
+Model
+S[20] = 5861.08
+R[20] = 2874.56
+Simulation
+Average S[20] = 5863 +- 95.22
+Average R[20] = 2880 +- 82.61
+
+a = 0.15
+Model
+S[20] = 4193.24
+R[20] = 3935.48
+Simulation
+Average S[20] = 4147 +- 40.76
+Average R[20] = 3972 +- 54.36
+
+a = 0.16
+Model
+S[20] = 3892.85
+R[20] = 4118.14
+Simulation
+Average S[20] = 3836 +- 38.61
+Average R[20] = 4120 +- 45.32
+
+a = 0.20
+Model
+S[20] = 2809.5
+R[20] = 4750.34
+Simulation
+Average S[20] = 2810 +- 51.14
+Average R[20] = 4745 +- 42.14
