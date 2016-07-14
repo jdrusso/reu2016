@@ -5,6 +5,8 @@ import numpy as np
 import sys, getopt
 
 MU1, MU2, ALPHA, T_MAX, S0, R0 = 0, 1, 2, 3, 4, 5
+DOUBLING_TIME = 30
+DOUBLING_UNITS = "minutes"
 
 
 
@@ -19,6 +21,15 @@ def strip_brackets(_list):
     l = [col[1:-1].split(', ') for col in l]
 
     return l
+
+
+def to_realtime(Ts, headerdict):
+
+    tau = np.log(2)/headerdict['mu1']
+    xs = [time/tau for time in Ts]
+    return xs
+
+
 
 
 
@@ -149,7 +160,9 @@ def plot(x, y, params, headerdict, fmt='k-', stat=False, label="Population"):
         mean = list(map(lambda x: (1 if np.isinf(x) or x<1 else x), mean))
         err = list(map(lambda x: (1 if np.isinf(x) else x), err))
 
-        plt.errorbar(x[0][:minlen], mean, yerr=err, fmt=fmt, label=label, linewidth=2)
+        xs = to_realtime(x[0][:minlen], headerdict)
+
+        plt.errorbar(xs, mean, yerr=err, fmt=fmt, label=label, linewidth=2)
 
     else:
         plt.plot(x, y, fmt=fmt)
@@ -197,7 +210,7 @@ Average long-term P: %d +- %f" %
         p_mean[-1], p_err[-1]))
 
 
-    plt.xlabel('Time steps')
+    plt.xlabel('Time steps (%s)' % DOUBLING_UNITS)
     plt.ylabel('Population size')
 
     max_y = max(max([max(x) for x in [S_pops, R_pops, P]]))
