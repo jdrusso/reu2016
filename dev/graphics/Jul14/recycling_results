@@ -8,7 +8,7 @@ u1 = .8
 u2 = .75
 Asymmetric
 Linear alpha
-No recycling
+Recycling
 
 a=.1
 Model
