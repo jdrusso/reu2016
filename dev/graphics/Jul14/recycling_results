@@ -1,0 +1,35 @@
+LINEAR
+--------------
+K = 1e4
+P0 = 1e4
+S0 = R0 = 1e3
+d = .3
+u1 = .8
+u2 = .75
+Asymmetric
+Linear alpha
+No recycling
+
+a=.1
+Model
+S[20] =
+R[20] =
+Simulation
+S[20] =
+R[20] =
+
+a=.15
+Model
+S[20] = 1678.41
+R[20] = 5469.09
+Simulation
+S[20] = 1700 +- 93.40
+R[20] = 5419 +- 50.10
+
+a=.2
+Model
+S[20] =
+R[20] =
+Simulation
+S[20] =
+R[20] =
