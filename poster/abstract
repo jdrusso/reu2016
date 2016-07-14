@@ -1,0 +1,15 @@
+Plasmids are independently reproducing segments of DNA. Through transformation,
+bacterial cells can acquire a plasmid and its associated trait at some fitness
+cost to the cell.
+Here, we investigate the effect of different rates of cellular transformation
+from plasmids encoding for antibiotic resistance on growth of well mixed
+populations of antibiotic-susceptible and resistant bacteria. A computer simulation
+is used to examine population dynamics that would not otherwise be apparent
+through mathematical modeling. By exploring the parameter space of the two major
+parameters, ratio of birth rates of the populations and the rate of transformation,
+we were able to identify the parameter ranges where the populations break even,
+and where one dominates the other.
+
+- Plasmids can give drug resistance to a bacteria, at the cost to
+the bacteria's fitness.
+- Mention
