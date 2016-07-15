@@ -56,21 +56,23 @@
 \setlength{\belowcaptionskip}{2ex} % White space under figures
 \setlength\belowdisplayshortskip{2ex} % White space under equations
 
+
+
+
 \begin{frame}[t] % The whole poster is enclosed in one beamer frame
+
+\begin{block}
+
 \begin{columns}[t] % The whole poster consists of three major columns, the second of which is split into two columns twice - the [t] option aligns each column's content to the top
-
 \begin{column}{\sepwid}\end{column} % Empty spacer column
-
 
 % ------------------------- First column -------------------------
 \begin{column}{\onecolwid}
 
-  %----------------------------------------------------------------------------------------
+  %-------------
   %	Motivation
-  %----------------------------------------------------------------------------------------
-
+  %-------------
   \begin{alertblock}{Motivation/Background}
-
   \begin{itemize}
     \item Ubiquitous threat of antibiotic resistance
     \item Investigate effect of different cellular transformation rates on antibiotic
@@ -81,113 +83,178 @@
   \begin{center}
     Diagram of cell with plasmids
   \end{center}
-
   \end{alertblock}
-
-
-
-  \begin{alertblock}{Constant $\alpha$}
-
-  \begin{center}
-    \includegraphics[width=0.9\columnwidth]{../dev/graphics/Jul14/const_alpha_contour.pdf}
-
-    \includegraphics[width=0.9\columnwidth]{../dev/graphics/Jul18/const_pop.pdf}
-  \end{center}
-
-  \end{alertblock}
-
 \end{column}
+
 % ----------------------------------------------------------------
 \begin{column}{\sepwid}\end{column} % Empty spacer column
-
 
 % ------------------------- Second column -------------------------
 \begin{column}{\onecolwid}
-
-
-
-%----------------------------------------------------------------------------------------
-%	INTRODUCTION
-%----------------------------------------------------------------------------------------
-
-\begin{block}{Simulation Methods}
-
-\begin{itemize}
-  \item Combined approach of Kinetic Monte Carlo simulation and numerical modeling
-  \item Gillespie algorithm
-  \item Well-mixed population
-  \item Three cases
-  \begin{itemize}
-    \item Constant $\alpha$
-    \item Linear $\alpha$
-    \item Recycled $\alpha$
-  \end{itemize}
-\end{itemize}
-
-\end{block}
-
-
-    \begin{alertblock}{Linear $\alpha$}
-
-    \begin{center}
-      \includegraphics[width=0.9\columnwidth]{../dev/graphics/Jul14/const_alpha_contour.pdf}
-
-      \includegraphics[width=0.9\columnwidth]{../dev/graphics/Jul18/const_pop.pdf}
-    \end{center}
-
-    \end{alertblock}
+  %-------------
+  %	INTRODUCTION
+  %-------------
+  \begin{block}{Simulation Methods}
+    \begin{itemize}
+      \item Combined approach of Kinetic Monte Carlo simulation and numerical modeling
+      \item Gillespie algorithm
+      \item Well-mixed population
+      \item Three cases
+      \begin{itemize}
+        \item Constant $\alpha$
+        \item Linear $\alpha$
+        \item Recycled $\alpha$
+      \end{itemize}
+    \end{itemize}
+  \end{block}
 \end{column}
-% ----------------------------------------------------------------
-\begin{column}{\sepwid}\end{column} % Empty spacer column
 
+\begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Third column -------------------------
 \begin{column}{\onecolwid}
-
-
-
-
-  %----------------------------------------------------------------------------------------
-  %	INTRODUCTION
-  %----------------------------------------------------------------------------------------
-
+  %-------------
+  %	Motivation
+  %-------------
   \begin{block}{Simulation Methods}
-
-  \begin{itemize}
-    \item Combined approach of Kinetic Monte Carlo simulation and numerical modeling
-    \item Gillespie algorithm
-    \item Well-mixed population
-    \item Three cases
     \begin{itemize}
-      \item Constant $\alpha$
-      \item Linear $\alpha$
-      \item Recycled $\alpha$
+      \item Combined approach of Kinetic Monte Carlo simulation and numerical modeling
+      \item Gillespie algorithm
+      \item Well-mixed population
+      \item Three cases
+      \begin{itemize}
+        \item Constant $\alpha$
+        \item Linear $\alpha$
+        \item Recycled $\alpha$
+      \end{itemize}
     \end{itemize}
-  \end{itemize}
-
   \end{block}
-
-
-
-      \begin{alertblock}{Recycled $\alpha$}
-
-      \begin{center}
-        \includegraphics[width=0.9\columnwidth]{../dev/graphics/Jul14/const_alpha_contour.pdf}
-
-        \includegraphics[width=0.9\columnwidth]{../dev/graphics/Jul18/const_pop.pdf}
-      \end{center}
-
-
-      \end{alertblock}
 \end{column}
 % ----------------------------------------------------------------
 \begin{column}{\sepwid}\end{column} % Empty spacer column
+\end{columns} % End of all the columns in the poster
+\end{block}
 
 
+\begin{block}
 
+\begin{columns}[t] % The whole poster consists of three major columns, the second of which is split into two columns twice - the [t] option aligns each column's content to the top
+\begin{column}{\sepwid}\end{column} % Empty spacer column
 
+% ------------------------- First column -------------------------
+\begin{column}{\onecolwid}
+  \begin{alertblock}{Linear $\alpha$}
+  \begin{center}
+    \includegraphics[width=\columnwidth]{../dev/graphics/Jul14/const_alpha_contour.pdf}
+
+    \includegraphics[width=\columnwidth]{../dev/graphics/Jul18/const_pop.pdf}
+  \end{center}
+  \end{alertblock}
+\end{column}
+
+% ----------------------------------------------------------------
+
+\begin{column}{\sepwid}\end{column} % Empty spacer column
+
+% ------------------------- Second column -------------------------
+\begin{column}{\onecolwid}
+  \begin{alertblock}{Linear $\alpha$}
+    \begin{center}
+      \includegraphics[width=\columnwidth]{../dev/graphics/Jul14/const_alpha_contour.pdf}
+
+      \includegraphics[width=\columnwidth]{../dev/graphics/Jul18/const_pop.pdf}
+    \end{center}
+  \end{alertblock}
+\end{column}
+\begin{column}{\sepwid}\end{column} % Empty spacer column
+
+% ------------------------- Third column -------------------------
+\begin{column}{\onecolwid}
+  \begin{alertblock}{Recycled $\alpha$}
+    \begin{center}
+      \includegraphics[width=\columnwidth]{../dev/graphics/Jul14/const_alpha_contour.pdf}
+
+      \includegraphics[width=\columnwidth]{../dev/graphics/Jul18/const_pop.pdf}
+    \end{center}
+  \end{alertblock}
+\end{column}
+% ----------------------------------------------------------------
+
+\begin{column}{\sepwid}\end{column} % Empty spacer column
 
 \end{columns} % End of all the columns in the poster
+\end{block}
+
+
+\begin{block}
+
+\begin{columns}[t] % The whole poster consists of three major columns, the second of which is split into two columns twice - the [t] option aligns each column's content to the top
+\begin{column}{\sepwid}\end{column} % Empty spacer column
+
+% ------------------------- First column -------------------------
+\begin{column}{\onecolwid}
+  %-------------
+  %	Conclusions
+  %-------------
+  \begin{block}{Conclusions}
+    \begin{itemize}
+      \item Combined approach of Kinetic Monte Carlo simulation and numerical modeling
+      \item Gillespie algorithm
+      \item Well-mixed population
+      \item Three cases
+      \begin{itemize}
+        \item Constant $\alpha$
+        \item Linear $\alpha$
+        \item Recycled $\alpha$
+      \end{itemize}
+    \end{itemize}
+  \end{block}
+\end{column}
+
+% ----------------------------------------------------------------
+\begin{column}{\sepwid}\end{column} % Empty spacer column
+
+% ------------------------- Second column -------------------------
+\begin{column}{\onecolwid}
+  %-------------
+  %	INTRODUCTION
+  %-------------
+  \begin{block}{Simulation Methods}
+    \begin{itemize}
+      \item Combined approach of Kinetic Monte Carlo simulation and numerical modeling
+      \item Gillespie algorithm
+      \item Well-mixed population
+      \item Three cases
+      \begin{itemize}
+        \item Constant $\alpha$
+        \item Linear $\alpha$
+        \item Recycled $\alpha$
+      \end{itemize}
+    \end{itemize}
+  \end{block}
+\end{column}
+
+\begin{column}{\sepwid}\end{column} % Empty spacer column
+
+% ------------------------- Third column -------------------------
+\begin{column}{\onecolwid}
+  \begin{alertblock}{Acknowledgements}
+    Thank you etc etc
+  \end{alertblock}
+
+  \begin{alertblock}{References}
+    \begin{itemize}
+      \item Source 1
+      \item Source 2
+    \end{itemize}
+  \end{alertblock}
+\end{column}
+% ----------------------------------------------------------------
+\begin{column}{\sepwid}\end{column} % Empty spacer column
+\end{columns} % End of all the columns in the poster
+\end{block}
+
+
 \end{frame} % End of the enclosing frame
 
 \end{document}
