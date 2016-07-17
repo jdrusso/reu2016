@@ -8,6 +8,7 @@
 \setbeamercolor{block body}{fg=black,bg=white} % Colors of the body of blocks
 \setbeamercolor{block alerted title}{fg=white,bg=dblue!70} % Colors of the highlighted block titles
 \setbeamercolor{block alerted body}{fg=black,bg=dblue!10} % Colors of the body of highlighted blocks
+\addtobeamertemplate{block begin}{\setlength\abovedisplayskip{0pt}}
 
 %-----------------------------------------------------------
 % Define the column widths and overall poster size
@@ -21,13 +22,17 @@
 \newlength{\onecolwid}
 \newlength{\twocolwid}
 \newlength{\threecolwid}
+\newlength{\figwid}
 \setlength{\paperwidth}{48in} % A0 width: 46.8in
 \setlength{\paperheight}{36in} % A0 height: 33.1in
-\setlength{\sepwid}{0.024\paperwidth} % Separation width (white space) between columns
-\setlength{\onecolwid}{0.22\paperwidth} % Width of one column
+% \setlength{\sepwid}{0.024\paperwidth} % Separation width (white space) between columns
+\setlength{\sepwid}{1ex} % Separation width (white space) between columns
+% \setlength{\onecolwid}{0.32\paperwidth} % Width of one column
+\setlength{\onecolwid}{0.32\paperwidth} % Width of one column
 \setlength{\twocolwid}{0.464\paperwidth} % Width of two columns
 \setlength{\threecolwid}{0.708\paperwidth} % Width of three columns
 \setlength{\topmargin}{-0.5in} % Reduce the top margin size
+\setlength{\figwid}{.6\onecolwid}
 %-----------------------------------------------------------
 
 \usepackage{graphicx}  % Required for including images
@@ -50,8 +55,8 @@
 
 \begin{document}
 
-\addtobeamertemplate{block end}{}{\vspace*{2ex}} % White space under blocks
-\addtobeamertemplate{block alerted end}{}{\vspace*{2ex}} % White space under highlighted (alert) blocks
+% \addtobeamertemplate{block end}{}{\vspace*{1ex}} % White space under blocks
+% \addtobeamertemplate{block alerted end}{}{\vspace*{1ex}} % White space under highlighted (alert) blocks
 
 \setlength{\belowcaptionskip}{2ex} % White space under figures
 \setlength\belowdisplayshortskip{2ex} % White space under equations
@@ -64,7 +69,7 @@
 \begin{block}
 
 \begin{columns}[t] % The whole poster consists of three major columns, the second of which is split into two columns twice - the [t] option aligns each column's content to the top
-\begin{column}{\sepwid}\end{column} % Empty spacer column
+\begin{column}{4ex}\end{column} % Empty spacer column
 
 % ------------------------- First column -------------------------
 \begin{column}{\onecolwid}
@@ -74,10 +79,9 @@
   %-------------
   \begin{alertblock}{Motivation/Background}
   \begin{itemize}
-    \item Ubiquitous threat of antibiotic resistance
+    \item Ubiquitous threat of antibiotic resistant bacteria
     \item Investigate effect of different cellular transformation rates on antibiotic
     resistant bacterial population growth
-    \item Plasmids
   \end{itemize}
 
   \begin{center}
@@ -90,23 +94,17 @@
 \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Second column -------------------------
-\begin{column}{\onecolwid}
+\begin{column}{.8\onecolwid}
   %-------------
   %	INTRODUCTION
   %-------------
-  \begin{block}{Simulation Methods}
+  \begin{alertblock}{Background}
     \begin{itemize}
-      \item Combined approach of Kinetic Monte Carlo simulation and numerical modeling
-      \item Gillespie algorithm
-      \item Well-mixed population
-      \item Three cases
-      \begin{itemize}
-        \item Constant $\alpha$
-        \item Linear $\alpha$
-        \item Recycled $\alpha$
-      \end{itemize}
+      \item Plasmids
+      \item Fitness cost
+      \item Transformation
     \end{itemize}
-  \end{block}
+  \end{alertblock}
 \end{column}
 
 \begin{column}{\sepwid}\end{column} % Empty spacer column
@@ -116,99 +114,185 @@
   %-------------
   %	Motivation
   %-------------
-  \begin{block}{Simulation Methods}
+  \begin{alertblock}{Simulation Methods}
     \begin{itemize}
       \item Combined approach of Kinetic Monte Carlo simulation and numerical modeling
       \item Gillespie algorithm
       \item Well-mixed population
-      \item Three cases
-      \begin{itemize}
-        \item Constant $\alpha$
-        \item Linear $\alpha$
-        \item Recycled $\alpha$
-      \end{itemize}
+      \item Carrying capacity
+      \item Constant, Linear, Recycled $\alpha$
+      \item Symmetric division
     \end{itemize}
-  \end{block}
+  \end{alertblock}
 \end{column}
 % ----------------------------------------------------------------
-\begin{column}{\sepwid}\end{column} % Empty spacer column
+% \begin{column}{\sepwid}\end{column} % Empty spacer column
 \end{columns} % End of all the columns in the poster
 \end{block}
 
 
 \begin{block}
 
-\begin{columns}[t] % The whole poster consists of three major columns, the second of which is split into two columns twice - the [t] option aligns each column's content to the top
-\begin{column}{\sepwid}\end{column} % Empty spacer column
+\begin{columns}[t]
+% \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- First column -------------------------
 \begin{column}{\onecolwid}
-  \begin{alertblock}{Linear $\alpha$}
-  \begin{center}
-    \includegraphics[width=\columnwidth]{../dev/graphics/Jul14/const_alpha_contour.pdf}
 
-    \includegraphics[width=\columnwidth]{../dev/graphics/Jul18/const_pop.pdf}
+  \setbeamercolor{block title}{fg=black,bg=white} % Colors of the block titles
+  \begin{block}{Constant $\alpha$}
+  \setbeamercolor{block title}{fg=ngreen,bg=white} % Colors of the block titles
+  \begin{center}
+    \includegraphics[width=\figwid]{../dev/graphics/poster/const_contour.pdf}
+
+    \includegraphics[width=\figwid]{../dev/graphics/poster/const_pop.pdf}
   \end{center}
-  \end{alertblock}
+
+  \begin{columns}[t]
+    \begin{column}{.2\onecolwid}
+      \begin{center}
+        Reactions
+      \end{center}
+      \begin{align*}
+        S &\rightarrow 2S \\
+        S &\rightarrow  R \\
+        R &\rightarrow 2R \\
+        R &\rightarrow \varnothing
+      \end{align*}
+    \end{column}
+      \vrule
+    \begin{column}{.5\onecolwid}
+      \begin{center}
+        Equations
+      \end{center}
+
+      \begin{align*}
+        \frac{dS}{dt}& = \mu_1 \left(1 - \frac{S + R}{K}\right)S - \alpha S \\[0.5ex]
+        \frac{dR}{dt}& = \mu_2 \left(1 - \frac{S + R}{K}\right)R + \alpha S - \delta R
+      \end{align*}
+
+      \vspace{.9\baselineskip}
+      \vspace{.9\baselineskip}
+    \end{column}
+  \end{columns}
+
+  \end{block}
 \end{column}
 
 % ----------------------------------------------------------------
-
+\vrule width 5pt
 \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Second column -------------------------
 \begin{column}{\onecolwid}
-  \begin{alertblock}{Linear $\alpha$}
+
+  \setbeamercolor{block title}{fg=nred,bg=white} % Colors of the block titles
+  \begin{block}{Linear $\alpha$}
+  \setbeamercolor{block title}{fg=ngreen,bg=white} % Colors of the block titles
     \begin{center}
-      \includegraphics[width=\columnwidth]{../dev/graphics/Jul14/const_alpha_contour.pdf}
+      \includegraphics[width=\figwid]{../dev/graphics/poster/linear_contour.pdf}
 
-      \includegraphics[width=\columnwidth]{../dev/graphics/Jul18/const_pop.pdf}
+      \includegraphics[width=\figwid]{../dev/graphics/poster/linear_pop.pdf}
     \end{center}
-  \end{alertblock}
-\end{column}
-\begin{column}{\sepwid}\end{column} % Empty spacer column
 
+    \begin{columns}[t]
+      \begin{column}{.2\onecolwid}
+        \begin{center}
+          Reactions
+        \end{center}
+        \begin{align*}
+          S &\rightarrow 2S \\
+          S \color{nred}+ P\color{black} &\rightarrow  R \\[0.8ex]
+          R &\rightarrow 2R \\
+          R &\rightarrow \varnothing
+        \end{align*}
+      \end{column}
+        \vrule
+      \begin{column}{.6\onecolwid}
+        \begin{center}
+          Equations
+        \end{center}
+
+        \begin{align*}
+          \frac{dS}{dt} & = \mu_1 \left(1 - \frac{S + R}{K}\right)S - \alpha
+            \color{nred}\left( \frac{P}{P_0} \right)\color{black} S \\[0.8ex]
+          \frac{dR}{dt} & = \mu_2 \left(1 - \frac{S + R}{K}\right)R + \
+            \alpha \color{nred}\left( \frac{P}{P_0} \right)\color{black} S - \delta R \\[0.8ex]
+          \color{nred} \frac{dP}{dt} & \color{nred} = -\alpha \left( \frac{P}{P_0} \right) S \color{black}
+        \end{align*}
+      \end{column}
+    \end{columns}
+  \end{block}
+\end{column}
+
+
+\vrule width 5pt
+\begin{column}{1.5\sepwid}\end{column} % Empty spacer column
 % ------------------------- Third column -------------------------
 \begin{column}{\onecolwid}
-  \begin{alertblock}{Recycled $\alpha$}
-    \begin{center}
-      \includegraphics[width=\columnwidth]{../dev/graphics/Jul14/const_alpha_contour.pdf}
 
-      \includegraphics[width=\columnwidth]{../dev/graphics/Jul18/const_pop.pdf}
+  \setbeamercolor{block title}{fg=dblue,bg=white} % Colors of the block titles
+  \begin{block}{Recycled $\alpha$}
+  \setbeamercolor{block title}{fg=ngreen,bg=white} % Colors of the block titles
+    \begin{center}
+      \includegraphics[width=\figwid]{../dev/graphics/poster/recycled_contour.pdf}
+
+      \includegraphics[width=\figwid]{../dev/graphics/poster/recycled_pop.pdf}
     \end{center}
-  \end{alertblock}
+
+    \begin{columns}[t]
+      \begin{column}{.2\onecolwid}
+        \begin{center}
+          Reactions
+        \end{center}
+        \begin{align*}
+          S &\rightarrow 2S \\
+          S \color{nred}+ P\color{black} &\rightarrow  R \\
+          R &\rightarrow 2R \\
+          R &\rightarrow \varnothing \color{dblue} + P \color{black}
+        \end{align*}
+      \end{column}
+        \vrule
+      \begin{column}{.7\onecolwid}
+        \begin{center}
+          Equations
+        \end{center}
+
+        \begin{align*}
+          \frac{dS}{dt} & = \mu_1 \left(1 - \frac{S + R}{K}\right)S - \alpha
+          \color{nred} \left( \frac{P}{P_0} \right) \color{black} S +
+            \color{dblue} + \mu_2 \left(1 - \frac{S + R}{K}\right)R \color{black}  \\[0.8ex]
+        \frac{dR}{dt} & =  \alpha \color{nred} \left( \frac{P}{P_0} \right) \color{black} S  - \delta R \\[0.8ex]
+        \color{nred} \frac{dP}{dt} & \color{nred} = -\alpha \left( \frac{P}{P_0} \right) S \color{dblue} + \delta R(t) \color{black}
+        \end{align*}
+      \end{column}
+    \end{columns}
+  \end{block}
 \end{column}
 % ----------------------------------------------------------------
 
-\begin{column}{\sepwid}\end{column} % Empty spacer column
+% \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 \end{columns} % End of all the columns in the poster
 \end{block}
-
-
 \begin{block}
 
 \begin{columns}[t] % The whole poster consists of three major columns, the second of which is split into two columns twice - the [t] option aligns each column's content to the top
-\begin{column}{\sepwid}\end{column} % Empty spacer column
+% \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- First column -------------------------
 \begin{column}{\onecolwid}
   %-------------
   %	Conclusions
   %-------------
-  \begin{block}{Conclusions}
+  \begin{alertblock}{Conclusions}
     \begin{itemize}
-      \item Combined approach of Kinetic Monte Carlo simulation and numerical modeling
-      \item Gillespie algorithm
-      \item Well-mixed population
-      \item Three cases
-      \begin{itemize}
-        \item Constant $\alpha$
-        \item Linear $\alpha$
-        \item Recycled $\alpha$
-      \end{itemize}
+      \item Point
+      \item Point
+      \item Point
     \end{itemize}
-  \end{block}
+    \vspace{.005\baselineskip}
+  \end{alertblock}
 \end{column}
 
 % ----------------------------------------------------------------
@@ -219,30 +303,28 @@
   %-------------
   %	INTRODUCTION
   %-------------
-  \begin{block}{Simulation Methods}
+  \begin{alertblock}{Future Work}
     \begin{itemize}
-      \item Combined approach of Kinetic Monte Carlo simulation and numerical modeling
-      \item Gillespie algorithm
-      \item Well-mixed population
-      \item Three cases
-      \begin{itemize}
-        \item Constant $\alpha$
-        \item Linear $\alpha$
-        \item Recycled $\alpha$
-      \end{itemize}
+      \item Simulation on a lattice
+      \item Adding antibiotics
+      \item Asymmetric division
     \end{itemize}
-  \end{block}
+
+    \vspace{.05ex}
+  \end{alertblock}
 \end{column}
 
 \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Third column -------------------------
-\begin{column}{\onecolwid}
-  \begin{alertblock}{Acknowledgements}
-    Thank you etc etc
-  \end{alertblock}
+\begin{column}{.7\onecolwid}
+  \begin{alertblock}{Acknowledgements/References}
 
-  \begin{alertblock}{References}
+      Thank you etc etc
+  % \end{alertblock}
+  %
+  % \begin{alertblock}{References}
+
     \begin{itemize}
       \item Source 1
       \item Source 2
@@ -250,7 +332,7 @@
   \end{alertblock}
 \end{column}
 % ----------------------------------------------------------------
-\begin{column}{\sepwid}\end{column} % Empty spacer column
+% \begin{column}{\sepwid}\end{column} % Empty spacer column
 \end{columns} % End of all the columns in the poster
 \end{block}
 
