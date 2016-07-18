@@ -77,7 +77,7 @@
   %-------------
   %	Motivation
   %-------------
-  \begin{alertblock}{Motivation/Background}
+  \begin{alertblock}{Introduction}
   \begin{itemize}
     \item Ubiquitous threat of antibiotic resistant bacteria
     \item Investigate effect of different cellular transformation rates on antibiotic
@@ -98,7 +98,7 @@
   %-------------
   %	INTRODUCTION
   %-------------
-  \begin{alertblock}{Background}
+  \begin{alertblock}{Biological Background}
     \begin{itemize}
       \item Plasmids
       \item Fitness cost
@@ -154,10 +154,10 @@
         Reactions
       \end{center}
       \begin{align*}
-        S &\rightarrow 2S \\
-        S &\rightarrow  R \\
-        R &\rightarrow 2R \\
-        R &\rightarrow \varnothing
+        S & \stackrel{b_S}{\rightarrow} 2S \\
+        S & \stackrel{\alpha}{\rightarrow}  R \\
+        R & \stackrel{b_R}{\rightarrow} 2R \\
+        R & \stackrel{\delta}{\rightarrow} \varnothing
       \end{align*}
     \end{column}
       \vrule
@@ -201,10 +201,10 @@
           Reactions
         \end{center}
         \begin{align*}
-          S &\rightarrow 2S \\
-          S \color{nred}+ P\color{black} &\rightarrow  R \\[0.8ex]
-          R &\rightarrow 2R \\
-          R &\rightarrow \varnothing
+          S & \stackrel{b_S}{\rightarrow} 2S \\
+          S \color{nred}+ P\color{black} & \stackrel{\alpha}{\rightarrow}  R \\[0.8ex]
+          R &\stackrel{b_R}{\rightarrow} 2R \\
+          R &\stackrel{\delta}{\rightarrow} \varnothing
         \end{align*}
       \end{column}
         \vrule
@@ -246,7 +246,7 @@
           Reactions
         \end{center}
         \begin{align*}
-          S &\rightarrow 2S \\
+          S &\stackrel{b_S}{\rightarrow} 2S \\
           S \color{nred}+ P\color{black} &\rightarrow  R \\
           R &\rightarrow 2R \\
           R &\rightarrow \varnothing \color{dblue} + P \color{black}
