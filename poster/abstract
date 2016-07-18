@@ -10,6 +10,18 @@ parameters, ratio of birth rates of the populations and the rate of transformati
 we were able to identify the parameter ranges where the populations break even,
 and where one dominates the other.
 
-- Plasmids can give drug resistance to a bacteria, at the cost to
-the bacteria's fitness.
-- Mention
+
+V2:
+Bacteria developing antibiotic resistance is a ubiquitous threat. We plan to study
+the effect of different rates of transformation on emergence of antibiotic
+resistance due to plasmids. Plasmids are small, independently replicating
+chunks of genetic material, in this case coding for antibiotic resistance. A
+cell can absorb a plasmid through transformation, adding the plasmid's trait to
+its own genetic information. This comes with a small fitness cost, as the cell
+will take longer to reproduce the added genetic information. However, in the presence
+of antibiotics, increased survivability is worth the fitness cost. We used a combined approach
+of Kinetic Monte Carlo and mathematical modeling methods to explore a parameter
+space including growth and death rates, transformation rates, and plasmid
+availability. We focused on the effects of differential growth and transformation,
+finding that whether the susceptible or resistant population wins out is
+heavily dependent on transformation rate.
