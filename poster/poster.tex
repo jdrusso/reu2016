@@ -1,6 +1,6 @@
 \documentclass[final]{beamer}
 
-\usepackage[scale=1.24]{beamerposter} % Use the beamerposter package for laying out the poster
+\usepackage[scale=.9]{beamerposter} % Use the beamerposter package for laying out the poster
 \usepackage{tikz}
 
 \usetheme{confposter}
@@ -28,12 +28,12 @@
 \newlength{\twocolwid}
 \newlength{\threecolwid}
 \newlength{\figwid}
-\setlength{\paperwidth}{48in} % A0 width: 46.8in
-\setlength{\paperheight}{36in} % A0 height: 33.1in
+\setlength{\paperwidth}{40in} % A0 width: 46.8in
+\setlength{\paperheight}{30in} % A0 height: 33.1in
 % \setlength{\sepwid}{0.024\paperwidth} % Separation width (white space) between columns
-\setlength{\sepwid}{1ex} % Separation width (white space) between columns
+\setlength{\sepwid}{.1ex} % Separation width (white space) between columns
 % \setlength{\onecolwid}{0.32\paperwidth} % Width of one column
-\setlength{\onecolwid}{0.32\paperwidth} % Width of one column
+\setlength{\onecolwid}{0.4\paperwidth} % Width of one column
 \setlength{\twocolwid}{0.464\paperwidth} % Width of two columns
 \setlength{\threecolwid}{0.708\paperwidth} % Width of three columns
 \setlength{\topmargin}{-0.5in} % Reduce the top margin size
@@ -67,8 +67,8 @@
 \setlength\belowdisplayshortskip{2ex} % White space under equations
 
 \newcommand\AtPagemyUpperLeft[1]{\AtPageLowerLeft{%
-% \put(\LenToUnit{0.89\paperwidth},\LenToUnit{0.92\paperheight}){#1}}}
-\put(\LenToUnit{0.83\paperwidth},\LenToUnit{0.005\paperheight}){#1}}}
+\put(\LenToUnit{0.87\paperwidth},\LenToUnit{0.92\paperheight}){#1}}}
+% \put(\LenToUnit{0.83\paperwidth},\LenToUnit{0.005\paperheight}){#1}}}
 \AddToShipoutPictureFG{
   \AtPagemyUpperLeft{{\includegraphics[width=12cm,keepaspectratio]{bucknell.pdf}}}
 }%
@@ -79,10 +79,10 @@
 \begin{block}
 
 \begin{columns}[t] % The whole poster consists of three major columns, the second of which is split into two columns twice - the [t] option aligns each column's content to the top
-\begin{column}{4ex}\end{column} % Empty spacer column
+% \begin{column}{1ex}\end{column} % Empty spacer column
 
 % ------------------------- First column -------------------------
-\begin{column}{.85\onecolwid}
+\begin{column}{.75\onecolwid}
 
   %-------------
   %	Motivation
@@ -108,14 +108,16 @@
   \quad\quad We study differential growth and transformation to
   determine what most affects whether the susceptible or resistant population
   dominates.
+
+  \vspace{11ex}
   \end{alertblock}
 \end{column}
 
 % ----------------------------------------------------------------
-\begin{column}{10\sepwid}\end{column} % Empty spacer column
+% \begin{column}{10\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Second column -------------------------
-\begin{column}{.9\onecolwid}
+\begin{column}{.8\onecolwid}
   %-------------
   %	INTRODUCTION
   %-------------
@@ -133,18 +135,19 @@
     comes with a small fitness cost to the carrying cell, typically manifesting
     as a longer doubling time.
 
-    \vspace{2ex}
 
     \begin{center}
-      \includegraphics[width=.8\figwid]{../dev/graphics/poster/transformation.pdf}
+      \includegraphics[width=.7\figwid]{../dev/graphics/poster/transformation.pdf}
     \end{center}
+
+    \vspace{2.2ex}
   \end{alertblock}
 \end{column}
 
-\begin{column}{10\sepwid}\end{column} % Empty spacer column
+% \begin{column}{10\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Third column -------------------------
-\begin{column}{1.2\onecolwid}
+\begin{column}{.8\onecolwid}
   %-------------
   %	Motivation
   %-------------
@@ -176,10 +179,14 @@
     \vspace{1ex}
   \end{alertblock}
 \end{column}
+\begin{column}{.05\onecolwid}\end{column} % Empty spacer column
+
 % ----------------------------------------------------------------
-% \begin{column}{\sepwid}\end{column} % Empty spacer column
+\begin{column}{.3\onecolwid}\end{column} % Empty spacer column
 \end{columns} % End of all the columns in the poster
 \end{block}
+
+
 
 
 \begin{block}
@@ -188,7 +195,7 @@
 % \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- First column -------------------------
-\begin{column}{\onecolwid}
+\begin{column}{.8\onecolwid}
 
   \setbeamercolor{block title}{fg=black,bg=white} % Colors of the block titles
   \begin{block}{Constant $\alpha$}
@@ -198,10 +205,10 @@
     \vspace{1.5ex}
 
 %------------------------- Population plot and parameter table ---------------
-      \begin{minipage}[h]{0.6\onecolwid}
+      \begin{minipage}[h]{0.5\onecolwid}
       \includegraphics[width=.9\figwid]{../dev/graphics/poster/const_pop.pdf}
     \end{minipage}%
-    \begin{minipage}[h]{.3\onecolwid}
+    \begin{minipage}[h]{.4\onecolwid}
       \vfill \textbf{Parameters} \vspace{3mm}\\
       \begin{tabular}{l  r  c|c  l  r}
         \toprule
@@ -225,6 +232,7 @@
       \begin{center}
         Reactions
       \end{center}
+
       \begin{align*}
         S & \stackrel{b_S}{\rightarrow} 2S \\
         S & \stackrel{\alpha}{\rightarrow}  R \\
@@ -233,7 +241,7 @@
       \end{align*}
     \end{column}
       \vrule
-    \begin{column}{.5\onecolwid}
+    \begin{column}{.4\onecolwid}
       \begin{center}
         Equations
       \end{center}
@@ -256,7 +264,7 @@
 \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Second column -------------------------
-\begin{column}{.9\onecolwid}
+\begin{column}{.8\onecolwid}
 
   \setbeamercolor{block title}{fg=BurntOrange,bg=white} % Colors of the block titles
   \begin{block}{Linear $\alpha$}
@@ -266,10 +274,10 @@
       \vspace{1.5ex}
 
 %------------------------- Population plot and parameter table ---------------
-        \begin{minipage}[h]{0.6\onecolwid}
+        \begin{minipage}[h]{0.5\onecolwid}
         \includegraphics[width=.9\figwid]{../dev/graphics/poster/linear_pop.pdf}
       \end{minipage}%
-      \begin{minipage}[h]{.3\onecolwid}
+      \begin{minipage}[h]{.4\onecolwid}
         \vfill \textbf{Parameters} \vspace{3mm}\\
         \begin{tabular}{l  r  c|c  l  r}
           \toprule
@@ -294,6 +302,7 @@
         \begin{center}
           Reactions
         \end{center}
+
         \begin{align*}
           S & \stackrel{b_S}{\rightarrow} 2S \\
           S \color{BurntOrange}+ P\color{black} & \stackrel{\alpha}{\rightarrow}  R \\[0.8ex]
@@ -320,11 +329,10 @@
     \hrule height 3pt
   \end{block}
 \end{column}
-
 \vrule width 5pt
-\begin{column}{1.5\sepwid}\end{column} % Empty spacer column
+\begin{column}{1\sepwid}\end{column} % Empty spacer column
 % ------------------------- Third column -------------------------
-\begin{column}{\onecolwid}
+\begin{column}{.8\onecolwid}
 
   \setbeamercolor{block title}{fg=Purple,bg=white} % Colors of the block titles
   \begin{block}{Recycled $\alpha$}
@@ -333,10 +341,10 @@
       \includegraphics[width=\figwid]{../dev/graphics/poster/recycled_contour.pdf}
       \vspace{1.5ex}
 %------------------------- Population plot and parameter table ---------------
-        \begin{minipage}[h]{0.6\onecolwid}
+        \begin{minipage}[h]{0.5\onecolwid}
         \includegraphics[width=.9\figwid]{../dev/graphics/poster/recycled_pop.pdf}
       \end{minipage}%
-      \begin{minipage}[h]{.3\onecolwid}
+      \begin{minipage}[h]{.1\onecolwid}
         \vfill \textbf{Parameters} \vspace{3mm}\\
         \begin{tabular}{l  r  c|c  l  r}
           \toprule
@@ -359,10 +367,11 @@
     \hrule height 3pt
 
     \begin{columns}[t]
-      \begin{column}{.2\onecolwid}
+      \begin{column}{.08\onecolwid}
         \begin{center}
           Reactions
         \end{center}
+
         \begin{align*}
           S & \stackrel{b_S}{\rightarrow} 2S \\
           S \color{BurntOrange}+ P\color{black} & \stackrel{\alpha}{\rightarrow}  R \\
@@ -371,7 +380,7 @@
         \end{align*}
       \end{column}
         \vrule
-      \begin{column}{.75\onecolwid}
+      \begin{column}{.7\onecolwid}
         \begin{center}
           Equations
         \end{center}
@@ -391,7 +400,7 @@
 \end{column}
 % ----------------------------------------------------------------
 
-% \begin{column}{\sepwid}\end{column} % Empty spacer column
+\begin{column}{.35\onecolwid}\end{column} % Empty spacer column
 
 \end{columns} % End of all the columns in the poster
 \end{block}
@@ -401,7 +410,7 @@
 % \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- First column -------------------------
-\begin{column}{1.4\onecolwid}
+\begin{column}{1.1\onecolwid}
   %-------------
   %	Conclusions
   %-------------
@@ -426,10 +435,10 @@
 \end{column}
 
 % ----------------------------------------------------------------
-\begin{column}{\sepwid}\end{column} % Empty spacer column
+% \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Second column -------------------------
-\begin{column}{.9\onecolwid}
+\begin{column}{.8\onecolwid}
   %-------------
   %	INTRODUCTION
   %-------------
@@ -445,14 +454,15 @@
     where increased survivability outweighs the fitness cost of carrying a plasmid. \\
     \quad Changing $R$ division to an asymmetric scheme ($R \rightarrow R + S$) would
     yield a conserved total plasmid number.
+    \vspace{.5ex}
 
   \end{alertblock}
 \end{column}
 
-\begin{column}{\sepwid}\end{column} % Empty spacer column
+% \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Third column -------------------------
-\begin{column}{.6\onecolwid}
+\begin{column}{.5\onecolwid}
   \begin{alertblock}{Acknowledgements}
 
       We would like to acknowledge the generous support provided to us by the National Science
@@ -460,11 +470,11 @@
       % We also thank the
       % Bucknell University Department of Physics and Astronomy.
       %
-      % \vspace{5.5ex}
+      \vspace{8.5ex}
   \end{alertblock}
 \end{column}
 % ----------------------------------------------------------------
-% \begin{column}{\sepwid}\end{column} % Empty spacer column
+\begin{column}{.4\onecolwid}\end{column} % Empty spacer column
 \end{columns} % End of all the columns in the poster
 \end{block}
 \vspace{1ex}
