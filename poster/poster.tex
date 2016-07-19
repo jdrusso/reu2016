@@ -32,7 +32,7 @@
 \setlength{\twocolwid}{0.464\paperwidth} % Width of two columns
 \setlength{\threecolwid}{0.708\paperwidth} % Width of three columns
 \setlength{\topmargin}{-0.5in} % Reduce the top margin size
-\setlength{\figwid}{.6\onecolwid}
+\setlength{\figwid}{.55\onecolwid}
 %-----------------------------------------------------------
 
 \usepackage{graphicx}  % Required for including images
@@ -46,11 +46,11 @@
 %	TITLE SECTION
 %----------------------------------------------------------------------------------------
 
-\title{Research Title} % Poster title
+\title{Simulation and Theory of Bacterial Transformation} % Poster title
 
-\author{J. Russo, JJ Dong} % Author(s)
+\author{JD Russo, Jiajia Dong} % Author(s)
 
-\institute{Bucknell University, Department of Physics and Astronomy} % Institution(s)
+\institute{Department of Physics and Astronomy, Bucknell University} % Institution(s)
 
 
 \begin{document}
@@ -85,7 +85,7 @@
   \end{itemize}
 
   \begin{center}
-    Diagram of cell with plasmids
+    \includegraphics[width=.8\figwid]{../dev/graphics/poster/transformation.pdf}
   \end{center}
   \end{alertblock}
 \end{column}
@@ -167,8 +167,8 @@
       \end{center}
 
       \begin{align*}
-        \frac{dS}{dt}& = \mu_1 \left(1 - \frac{S + R}{K}\right)S - \alpha S \\[0.5ex]
-        \frac{dR}{dt}& = \mu_2 \left(1 - \frac{S + R}{K}\right)R + \alpha S - \delta R
+        \frac{dS}{dt}& = b_S \left(1 - \frac{S + R}{K}\right)S - \alpha S \\[0.5ex]
+        \frac{dR}{dt}& = b_R \left(1 - \frac{S + R}{K}\right)R + \alpha S - \delta R
       \end{align*}
 
       \vspace{.9\baselineskip}
@@ -184,9 +184,9 @@
 \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Second column -------------------------
-\begin{column}{\onecolwid}
+\begin{column}{.9\onecolwid}
 
-  \setbeamercolor{block title}{fg=nred,bg=white} % Colors of the block titles
+  \setbeamercolor{block title}{fg=norange,bg=white} % Colors of the block titles
   \begin{block}{Linear $\alpha$}
   \setbeamercolor{block title}{fg=ngreen,bg=white} % Colors of the block titles
     \begin{center}
@@ -202,7 +202,7 @@
         \end{center}
         \begin{align*}
           S & \stackrel{b_S}{\rightarrow} 2S \\
-          S \color{nred}+ P\color{black} & \stackrel{\alpha}{\rightarrow}  R \\[0.8ex]
+          S \color{norange}+ P\color{black} & \stackrel{\alpha}{\rightarrow}  R \\[0.8ex]
           R &\stackrel{b_R}{\rightarrow} 2R \\
           R &\stackrel{\delta}{\rightarrow} \varnothing
         \end{align*}
@@ -214,24 +214,22 @@
         \end{center}
 
         \begin{align*}
-          \frac{dS}{dt} & = \mu_1 \left(1 - \frac{S + R}{K}\right)S - \alpha
-            \color{nred}\left( \frac{P}{P_0} \right)\color{black} S \\[0.8ex]
-          \frac{dR}{dt} & = \mu_2 \left(1 - \frac{S + R}{K}\right)R + \
-            \alpha \color{nred}\left( \frac{P}{P_0} \right)\color{black} S - \delta R \\[0.8ex]
-          \color{nred} \frac{dP}{dt} & \color{nred} = -\alpha \left( \frac{P}{P_0} \right) S \color{black}
+          \frac{dS}{dt} & = b_S \left(1 - \frac{S + R}{K}\right)S - \alpha
+            \color{norange}\left( \frac{P}{P_0} \right)\color{black} S \\[0.8ex]
+          \frac{dR}{dt} & = b_R \left(1 - \frac{S + R}{K}\right)R + \
+            \alpha \color{norange}\left( \frac{P}{P_0} \right)\color{black} S - \delta R \\[0.8ex]
+          \color{norange} \frac{dP}{dt} & \color{norange} = -\alpha \left( \frac{P}{P_0} \right) S \color{black}
         \end{align*}
       \end{column}
     \end{columns}
   \end{block}
 \end{column}
-
-
 \vrule width 5pt
 \begin{column}{1.5\sepwid}\end{column} % Empty spacer column
 % ------------------------- Third column -------------------------
 \begin{column}{\onecolwid}
 
-  \setbeamercolor{block title}{fg=dblue,bg=white} % Colors of the block titles
+  \setbeamercolor{block title}{fg=Purple,bg=white} % Colors of the block titles
   \begin{block}{Recycled $\alpha$}
   \setbeamercolor{block title}{fg=ngreen,bg=white} % Colors of the block titles
     \begin{center}
@@ -247,23 +245,23 @@
         \end{center}
         \begin{align*}
           S &\stackrel{b_S}{\rightarrow} 2S \\
-          S \color{nred}+ P\color{black} &\rightarrow  R \\
+          S \color{norange}+ P\color{black} &\rightarrow  R \\
           R &\rightarrow 2R \\
-          R &\rightarrow \varnothing \color{dblue} + P \color{black}
+          R &\rightarrow \varnothing \color{Purple} + P \color{black}
         \end{align*}
       \end{column}
         \vrule
-      \begin{column}{.7\onecolwid}
+      \begin{column}{.75\onecolwid}
         \begin{center}
           Equations
         \end{center}
 
         \begin{align*}
-          \frac{dS}{dt} & = \mu_1 \left(1 - \frac{S + R}{K}\right)S - \alpha
-          \color{nred} \left( \frac{P}{P_0} \right) \color{black} S +
-            \color{dblue} + \mu_2 \left(1 - \frac{S + R}{K}\right)R \color{black}  \\[0.8ex]
-        \frac{dR}{dt} & =  \alpha \color{nred} \left( \frac{P}{P_0} \right) \color{black} S  - \delta R \\[0.8ex]
-        \color{nred} \frac{dP}{dt} & \color{nred} = -\alpha \left( \frac{P}{P_0} \right) S \color{dblue} + \delta R(t) \color{black}
+          \frac{dS}{dt} & = b_S \left(1 - \frac{S + R}{K}\right)S - \alpha
+          \color{norange} \left( \frac{P}{P_0} \right) \color{black} S +
+            \color{Purple} + b_R \left(1 - \frac{S + R}{K}\right)R \color{black}  \\[0.8ex]
+        \frac{dR}{dt} & =  \alpha \color{norange} \left( \frac{P}{P_0} \right) \color{black} S  - \delta R \\[0.8ex]
+        \color{norange} \frac{dP}{dt} & \color{norange} = -\alpha \left( \frac{P}{P_0} \right) S \color{Purple} + \delta R \color{black}
         \end{align*}
       \end{column}
     \end{columns}
@@ -287,9 +285,8 @@
   %-------------
   \begin{alertblock}{Conclusions}
     \begin{itemize}
-      \item Point
-      \item Point
-      \item Point
+      \item S/R transition point depends on both rate and mechanism
+      \item Population extinction in linear case
     \end{itemize}
     \vspace{.005\baselineskip}
   \end{alertblock}
