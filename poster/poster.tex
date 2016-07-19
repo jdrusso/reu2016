@@ -77,21 +77,32 @@
 \begin{column}{4ex}\end{column} % Empty spacer column
 
 % ------------------------- First column -------------------------
-\begin{column}{\onecolwid}
+\begin{column}{.85\onecolwid}
 
   %-------------
   %	Motivation
   %-------------
   \begin{alertblock}{Introduction}
-  \begin{itemize}
-    \item Ubiquitous threat of antibiotic resistant bacteria
-    \item Investigate effect of different cellular transformation rates on antibiotic
-    resistant bacterial population growth
-  \end{itemize}
+  % \begin{itemize}
+  %   \item Ubiquitous threat of antibiotic resistant bacteria
+  %   \item Investigate effect of different cellular transformation rates on antibiotic
+  %   resistant bacterial population growth
+  % \end{itemize}
+  The threat of antibiotic resistant bacteria is becoming more ubiquitous, even
+  among well-controlled diseases such as tuberculosis. Main mechanisms
+  for the emergence of antibiotic resistance include conjugation and transformation.
+  We focus on the effect of transformation.
 
-  \begin{center}
-    \includegraphics[width=.8\figwid]{../dev/graphics/poster/transformation.pdf}
-  \end{center}
+  \quad\quad We use a combined approach of Kinetic Monte Carlo simulation and
+  mathematical
+  modeling to explore interplay among \textbf{growth} ($b$), \textbf{death} ($\delta$), \textbf{transformation} ($\alpha$), and \textbf{plasmid availability} ($P$).
+  Numerically modelling the populations with their
+  associated differential equations provides information about long-term
+  population behavior, while K.M.C. simulation provides information about dynamics.
+
+  \quad\quad We study differential growth and transformation to
+  determine what most affects whether the susceptible or resistant population
+  dominates.
   \end{alertblock}
 \end{column}
 
@@ -99,36 +110,61 @@
 \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Second column -------------------------
-\begin{column}{.8\onecolwid}
+\begin{column}{.9\onecolwid}
   %-------------
   %	INTRODUCTION
   %-------------
   \begin{alertblock}{Biological Background}
-    \begin{itemize}
-      \item Plasmids
-      \item Fitness cost
-      \item Transformation
-    \end{itemize}
+    % \begin{itemize}
+    %   \item Plasmids
+    %   \item Fitness cost
+    %   \item Transformation
+    % \end{itemize}
+    \textbf{Plasmids} are small independently replicating genetic materials,
+    often including DNA segments encoding antibiotic resistance.
+
+    \quad\quad Through \textbf{transformation} a cell can incorporate
+    a physical plasmid and translate the encoded genes. However, this often
+    comes with a small fitness cost to the carrying cell, typically manifesting
+    as a longer doubling time.
+
+    \begin{center}
+      \includegraphics[width=.8\figwid]{../dev/graphics/poster/transformation.pdf}
+    \end{center}
   \end{alertblock}
 \end{column}
 
 \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Third column -------------------------
-\begin{column}{\onecolwid}
+\begin{column}{1.2\onecolwid}
   %-------------
   %	Motivation
   %-------------
   \begin{alertblock}{Simulation Methods}
-    \begin{itemize}
-      \item Combined approach of Kinetic Monte Carlo simulation and numerical modeling
-      \item Gillespie algorithm
-      \item Well-mixed population
-      \item Carrying capacity
-      \item Constant, Linear, Recycled $\alpha$
-      \item Symmetric division
-      \item Realtime conversion
-    \end{itemize}
+    % \begin{itemize}
+    %   \item Combined approach of Kinetic Monte Carlo simulation and numerical modeling
+    %   \item Gillespie algorithm
+    %   \item Well-mixed population
+    %   \item Carrying capacity
+    %   \item Constant, Linear, Recycled $\alpha$
+    %   \item Symmetric division
+    %   \item Realtime conversion
+    % \end{itemize}
+    We examine the \textbf{susceptible} ($S$) and \textbf{resistant} ($R$) populations
+    with a combined approach of numerical modeling methods and Kinetic Monte
+    Carlo simulation.
+
+    \quad\quad Kinetic Monte Carlo simulation allows us to
+    capture information about the dynamics of the populations. We implement the
+    Gillespie algorithm, which consists of the following steps:
+    \begin{center}
+    \includegraphics[width=\figwid]{../dev/graphics/poster/gillespie.pdf}
+    \end{center}
+
+    \quad\quad We assume a well-mixed environment, a fixed carrying capacity $K$, and
+    that reproduction occurs symmetrically for both $S$ and $R$. This does not conserve total
+    plasmid number.
   \end{alertblock}
 \end{column}
 % ----------------------------------------------------------------
@@ -154,7 +190,7 @@
 
 %------------------------- Population plot and parameter table ---------------
       \begin{minipage}[h]{0.6\onecolwid}
-      \includegraphics[width=\figwid]{../dev/graphics/poster/const_pop.pdf}
+      \includegraphics[width=.9\figwid]{../dev/graphics/poster/const_pop.pdf}
     \end{minipage}%
     \begin{minipage}[h]{.3\onecolwid}
       \vfill \textbf{Parameters} \vspace{3mm}\\
@@ -213,7 +249,7 @@
 % ------------------------- Second column -------------------------
 \begin{column}{.9\onecolwid}
 
-  \setbeamercolor{block title}{fg=norange,bg=white} % Colors of the block titles
+  \setbeamercolor{block title}{fg=BurntOrange,bg=white} % Colors of the block titles
   \begin{block}{Linear $\alpha$}
   \setbeamercolor{block title}{fg=ngreen,bg=white} % Colors of the block titles
     \begin{center}
@@ -222,7 +258,7 @@
 
 %------------------------- Population plot and parameter table ---------------
         \begin{minipage}[h]{0.6\onecolwid}
-        \includegraphics[width=\figwid]{../dev/graphics/poster/linear_pop.pdf}
+        \includegraphics[width=.9\figwid]{../dev/graphics/poster/linear_pop.pdf}
       \end{minipage}%
       \begin{minipage}[h]{.3\onecolwid}
         \vfill \textbf{Parameters} \vspace{3mm}\\
@@ -251,7 +287,7 @@
         \end{center}
         \begin{align*}
           S & \stackrel{b_S}{\rightarrow} 2S \\
-          S \color{norange}+ P\color{black} & \stackrel{\alpha}{\rightarrow}  R \\[0.8ex]
+          S \color{BurntOrange}+ P\color{black} & \stackrel{\alpha}{\rightarrow}  R \\[0.8ex]
           R &\stackrel{b_R}{\rightarrow} 2R \\
           R &\stackrel{\delta}{\rightarrow} \varnothing
         \end{align*}
@@ -264,10 +300,10 @@
 
         \begin{align*}
           \frac{dS}{dt} & = b_S \left(1 - \frac{S + R}{K}\right)S - \alpha
-            \color{norange}\left( \frac{P}{P_0} \right)\color{black} S \\[0.8ex]
+            \color{BurntOrange}\left( \frac{P}{P_0} \right)\color{black} S \\[0.8ex]
           \frac{dR}{dt} & = b_R \left(1 - \frac{S + R}{K}\right)R + \
-            \alpha \color{norange}\left( \frac{P}{P_0} \right)\color{black} S - \delta R \\[0.8ex]
-          \color{norange} \frac{dP}{dt} & \color{norange} = -\alpha \left( \frac{P}{P_0} \right) S \color{black}
+            \alpha \color{BurntOrange}\left( \frac{P}{P_0} \right)\color{black} S - \delta R \\[0.8ex]
+          \color{BurntOrange} \frac{dP}{dt} & \color{BurntOrange} = -\alpha \left( \frac{P}{P_0} \right) S \color{black}
         \end{align*}
         \vspace{1ex}
       \end{column}
@@ -289,7 +325,7 @@
       \vspace{1.5ex}
 %------------------------- Population plot and parameter table ---------------
         \begin{minipage}[h]{0.6\onecolwid}
-        \includegraphics[width=\figwid]{../dev/graphics/poster/recycled_pop.pdf}
+        \includegraphics[width=.9\figwid]{../dev/graphics/poster/recycled_pop.pdf}
       \end{minipage}%
       \begin{minipage}[h]{.3\onecolwid}
         \vfill \textbf{Parameters} \vspace{3mm}\\
@@ -320,7 +356,7 @@
         \end{center}
         \begin{align*}
           S & \stackrel{b_S}{\rightarrow} 2S \\
-          S \color{norange}+ P\color{black} & \stackrel{\alpha}{\rightarrow}  R \\
+          S \color{BurntOrange}+ P\color{black} & \stackrel{\alpha}{\rightarrow}  R \\
           R & \stackrel{b_R}{\rightarrow} 2R \\
           R & \stackrel{\delta}{\rightarrow} \varnothing \color{Purple} + P \color{black}
         \end{align*}
@@ -333,10 +369,10 @@
 
         \begin{align*}
           \frac{dS}{dt} & = b_S \left(1 - \frac{S + R}{K}\right)S - \alpha
-          \color{norange} \left( \frac{P}{P_0} \right) \color{black} S +
+          \color{BurntOrange} \left( \frac{P}{P_0} \right) \color{black} S +
             \color{Purple} + b_R \left(1 - \frac{S + R}{K}\right)R \color{black}  \\[0.8ex]
-        \frac{dR}{dt} & =  \alpha \color{norange} \left( \frac{P}{P_0} \right) \color{black} S  - \delta R \\[0.8ex]
-        \color{norange} \frac{dP}{dt} & \color{norange} = -\alpha \left( \frac{P}{P_0} \right) S \color{Purple} + \delta R \color{black}
+        \frac{dR}{dt} & =  \alpha \color{BurntOrange} \left( \frac{P}{P_0} \right) \color{black} S  - \delta R \\[0.8ex]
+        \color{BurntOrange} \frac{dP}{dt} & \color{BurntOrange} = -\alpha \left( \frac{P}{P_0} \right) S \color{Purple} + \delta R \color{black}
         \end{align*}
         \vspace{1ex}
       \end{column}
@@ -356,16 +392,27 @@
 % \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- First column -------------------------
-\begin{column}{\onecolwid}
+\begin{column}{1.4\onecolwid}
   %-------------
   %	Conclusions
   %-------------
   \begin{alertblock}{Conclusions}
-    \begin{itemize}
-      \item S/R transition point depends on both rate and mechanism
-      \item Population extinction in linear case
-    \end{itemize}
-    \vspace{.005\baselineskip}
+    % \begin{itemize}
+    %   \item S/R transition point depends on both rate and mechanism
+    %   \item Population extinction in linear case
+    % \end{itemize}
+    We aimed to determine what most heavily impacts $R$ or $S$ population dominance. \\
+    \quad\quad We found that the transition point where the dominant population switches
+    depends heavily on both transformation rate and mechanism. In the constant case,
+    long-term steady state behavior can be seen.\\
+    \quad\quad Both the linear and recycled cases present examples of population
+    extinction. In the linear case, the $S$ population invariably dominates,
+    as plasmids are never replenished. In the recycled case, plasmid
+    abundance enables the $R$ population to eventually outgrow the $S$.\\
+    \quad\quad In addition, only the linear case shows significant sensitivity
+    to the ratio of growth rates $b_S/b_R$
+
+    % \vspace{.005\baselineskip}
   \end{alertblock}
 \end{column}
 
@@ -373,16 +420,22 @@
 \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Second column -------------------------
-\begin{column}{\onecolwid}
+\begin{column}{.9\onecolwid}
   %-------------
   %	INTRODUCTION
   %-------------
   \begin{alertblock}{Future Work}
-    \begin{itemize}
-      \item Simulation on a lattice
-      \item Adding antibiotics
-      \item Asymmetric division
-    \end{itemize}
+    % \begin{itemize}
+    %   \item Simulation on a lattice
+    %   \item Adding antibiotics
+    %   \item Asymmetric division
+    % \end{itemize}
+    Currently, this simulation assumes well-mixed populations of $S$, $R$, and $P$.
+    A more realistic simulation could account for spatial configuration by simulating on a lattice.\\
+    \quad\quad Simulating adding antibiotics to the environment could reveal situations
+    where increased survivability outweighs the fitness cost of carrying a plasmid. \\
+    \quad Changing $R$ division to an asymmetric scheme ($R \rightarrow R + S$) would
+    yield a conserved total plasmid number.
 
     \vspace{.05ex}
   \end{alertblock}
@@ -391,24 +444,19 @@
 \begin{column}{\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Third column -------------------------
-\begin{column}{.7\onecolwid}
-  \begin{alertblock}{Acknowledgements/References}
+\begin{column}{.6\onecolwid}
+  \begin{alertblock}{Acknowledgements}
 
-      Thank you etc etc
-  % \end{alertblock}
-  %
-  % \begin{alertblock}{References}
-
-    \begin{itemize}
-      \item Source 1
-      \item Source 2
-    \end{itemize}
+      We would like to acknowledge the generous support provided to us by the National Science
+      Foundation through the NSF grant NSF-DMR \#1248387. We also thank the
+      Bucknell University Department of Physics and Astronomy.
   \end{alertblock}
 \end{column}
 % ----------------------------------------------------------------
 % \begin{column}{\sepwid}\end{column} % Empty spacer column
 \end{columns} % End of all the columns in the poster
 \end{block}
+\vspace{1ex}
 
 
 \end{frame} % End of the enclosing frame
