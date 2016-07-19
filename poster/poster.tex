@@ -41,7 +41,7 @@
 %-----------------------------------------------------------
 
 \usepackage{graphicx}  % Required for including images
-
+\usepackage{eso-pic}
 \usepackage{booktabs} % Top and bottom rules for tables
 
 
@@ -66,7 +66,12 @@
 \setlength{\belowcaptionskip}{2ex} % White space under figures
 \setlength\belowdisplayshortskip{2ex} % White space under equations
 
-
+\newcommand\AtPagemyUpperLeft[1]{\AtPageLowerLeft{%
+% \put(\LenToUnit{0.89\paperwidth},\LenToUnit{0.92\paperheight}){#1}}}
+\put(\LenToUnit{0.83\paperwidth},\LenToUnit{0.005\paperheight}){#1}}}
+\AddToShipoutPictureFG{
+  \AtPagemyUpperLeft{{\includegraphics[width=12cm,keepaspectratio]{bucknell.pdf}}}
+}%
 
 
 \begin{frame}[t] % The whole poster is enclosed in one beamer frame
@@ -107,7 +112,7 @@
 \end{column}
 
 % ----------------------------------------------------------------
-\begin{column}{\sepwid}\end{column} % Empty spacer column
+\begin{column}{10\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Second column -------------------------
 \begin{column}{.9\onecolwid}
@@ -128,13 +133,15 @@
     comes with a small fitness cost to the carrying cell, typically manifesting
     as a longer doubling time.
 
+    \vspace{2ex}
+
     \begin{center}
       \includegraphics[width=.8\figwid]{../dev/graphics/poster/transformation.pdf}
     \end{center}
   \end{alertblock}
 \end{column}
 
-\begin{column}{\sepwid}\end{column} % Empty spacer column
+\begin{column}{10\sepwid}\end{column} % Empty spacer column
 
 % ------------------------- Third column -------------------------
 \begin{column}{1.2\onecolwid}
@@ -165,6 +172,8 @@
     \quad\quad We assume a well-mixed environment, a fixed carrying capacity $K$, and
     that reproduction occurs symmetrically for both $S$ and $R$. This does not conserve total
     plasmid number.
+
+    \vspace{1ex}
   \end{alertblock}
 \end{column}
 % ----------------------------------------------------------------
@@ -198,10 +207,10 @@
         \toprule
         $\alpha$ & .13 & \quad & \quad &
           $\frac{b_S}{b_R}$ & 1.07 \\
-        $S_0$ & 1e3 & \quad & \quad &
-          $R_0$ & 1e3 \\
-        $P_0$ & 1e4 & \quad & \quad &
-          $K$ & 1e4 \\
+        $S_0$ & $10^3$ & \quad & \quad &
+          $R_0$ & $10^3$ \\
+        $P_0$ & $10^4$ & \quad & \quad &
+          $K$ & $10^4$ \\
           \bottomrule
       \end{tabular}\\\vspace{1ex}
 
@@ -266,10 +275,10 @@
           \toprule
           $\alpha$ & .3 & \quad & \quad &
             $\frac{b_S}{b_R}$ & 1.07 \\
-          $S_0$ & 1e3 & \quad & \quad &
-            $R_0$ & 1e3 \\
-          $P_0$ & 1e4 & \quad & \quad &
-            $K$ & 1e4 \\
+          $S_0$ & $10^3$ & \quad & \quad &
+            $R_0$ & $10^3$ \\
+          $P_0$ & $10^4$ & \quad & \quad &
+            $K$ & $10^4$ \\
             \bottomrule
         \end{tabular}\\\vspace{1ex}
 
@@ -333,10 +342,10 @@
           \toprule
           $\alpha$ & .13 & \quad & \quad &
             $\frac{b_S}{b_R}$ & 1.07 \\
-          $S_0$ & 1e3 & \quad & \quad &
-            $R_0$ & 1e3 \\
-          $P_0$ & 1e4 & \quad & \quad &
-            $K$ & 1e4 \\
+          $S_0$ & $10^3$ & \quad & \quad &
+            $R_0$ & $10^3$ \\
+          $P_0$ & $10^4$ & \quad & \quad &
+            $K$ & $10^4$ \\
             \bottomrule
           \end{tabular}\\\vspace{1ex}
 
@@ -437,7 +446,6 @@
     \quad Changing $R$ division to an asymmetric scheme ($R \rightarrow R + S$) would
     yield a conserved total plasmid number.
 
-    \vspace{.05ex}
   \end{alertblock}
 \end{column}
 
@@ -448,8 +456,11 @@
   \begin{alertblock}{Acknowledgements}
 
       We would like to acknowledge the generous support provided to us by the National Science
-      Foundation through the NSF grant NSF-DMR \#1248387. We also thank the
-      Bucknell University Department of Physics and Astronomy.
+      Foundation through the NSF grant NSF-DMR \#1248387.
+      % We also thank the
+      % Bucknell University Department of Physics and Astronomy.
+      %
+      % \vspace{5.5ex}
   \end{alertblock}
 \end{column}
 % ----------------------------------------------------------------
