@@ -1,6 +1,7 @@
 \documentclass[final]{beamer}
 
 \usepackage[scale=1.24]{beamerposter} % Use the beamerposter package for laying out the poster
+\usepackage{tikz}
 
 \usetheme{confposter}
 
@@ -9,6 +10,10 @@
 \setbeamercolor{block alerted title}{fg=white,bg=dblue!70} % Colors of the highlighted block titles
 \setbeamercolor{block alerted body}{fg=black,bg=dblue!10} % Colors of the body of highlighted blocks
 \addtobeamertemplate{block begin}{\setlength\abovedisplayskip{0pt}}
+
+
+\newcommand{\redc}[2][red,fill=red]{\tikz[baseline=-0.5ex]\draw[#1,radius=#2] (0,0) circle ;}%
+\newcommand{\bluec}[2][blue,fill=blue]{\tikz[baseline=-0.5ex]\draw[#1,radius=#2] (0,0) circle ;}%
 
 %-----------------------------------------------------------
 % Define the column widths and overall poster size
@@ -122,6 +127,7 @@
       \item Carrying capacity
       \item Constant, Linear, Recycled $\alpha$
       \item Symmetric division
+      \item Realtime conversion
     \end{itemize}
   \end{alertblock}
 \end{column}
@@ -144,10 +150,31 @@
   \setbeamercolor{block title}{fg=ngreen,bg=white} % Colors of the block titles
   \begin{center}
     \includegraphics[width=\figwid]{../dev/graphics/poster/const_contour.pdf}
+    \vspace{1.5ex}
 
-    \includegraphics[width=\figwid]{../dev/graphics/poster/const_pop.pdf}
+%------------------------- Population plot and parameter table ---------------
+      \begin{minipage}[h]{0.6\onecolwid}
+      \includegraphics[width=\figwid]{../dev/graphics/poster/const_pop.pdf}
+    \end{minipage}%
+    \begin{minipage}[h]{.3\onecolwid}
+      \vfill \textbf{Parameters} \vspace{3mm}\\
+      \begin{tabular}{l  r  c|c  l  r}
+        \toprule
+        $\alpha$ & .13 & \quad & \quad &
+          $\frac{b_S}{b_R}$ & 1.07 \\
+        $S_0$ & 1e3 & \quad & \quad &
+          $R_0$ & 1e3 \\
+        $P_0$ & 1e4 & \quad & \quad &
+          $K$ & 1e4 \\
+          \bottomrule
+      \end{tabular}\\\vspace{1ex}
+
+      \redc{5pt}  Susceptible\\
+      \bluec{5pt}  Resistant
+    \end{minipage}
+%-----------------------------------------------------------------------------
   \end{center}
-
+  \hrule height 3pt
   \begin{columns}[t]
     \begin{column}{.2\onecolwid}
       \begin{center}
@@ -171,11 +198,11 @@
         \frac{dR}{dt}& = b_R \left(1 - \frac{S + R}{K}\right)R + \alpha S - \delta R
       \end{align*}
 
-      \vspace{.9\baselineskip}
-      \vspace{.9\baselineskip}
+      \vspace{2.5\baselineskip}
+      \vspace{1ex}
     \end{column}
   \end{columns}
-
+  \hrule height 3pt
   \end{block}
 \end{column}
 
@@ -191,9 +218,31 @@
   \setbeamercolor{block title}{fg=ngreen,bg=white} % Colors of the block titles
     \begin{center}
       \includegraphics[width=\figwid]{../dev/graphics/poster/linear_contour.pdf}
+      \vspace{1.5ex}
 
-      \includegraphics[width=\figwid]{../dev/graphics/poster/linear_pop.pdf}
+%------------------------- Population plot and parameter table ---------------
+        \begin{minipage}[h]{0.6\onecolwid}
+        \includegraphics[width=\figwid]{../dev/graphics/poster/linear_pop.pdf}
+      \end{minipage}%
+      \begin{minipage}[h]{.3\onecolwid}
+        \vfill \textbf{Parameters} \vspace{3mm}\\
+        \begin{tabular}{l  r  c|c  l  r}
+          \toprule
+          $\alpha$ & .3 & \quad & \quad &
+            $\frac{b_S}{b_R}$ & 1.07 \\
+          $S_0$ & 1e3 & \quad & \quad &
+            $R_0$ & 1e3 \\
+          $P_0$ & 1e4 & \quad & \quad &
+            $K$ & 1e4 \\
+            \bottomrule
+        \end{tabular}\\\vspace{1ex}
+
+        \redc{5pt}  Susceptible\\
+        \bluec{5pt}  Resistant
+      \end{minipage}
+%-----------------------------------------------------------------------------
     \end{center}
+    \hrule height 3pt
 
     \begin{columns}[t]
       \begin{column}{.2\onecolwid}
@@ -220,10 +269,13 @@
             \alpha \color{norange}\left( \frac{P}{P_0} \right)\color{black} S - \delta R \\[0.8ex]
           \color{norange} \frac{dP}{dt} & \color{norange} = -\alpha \left( \frac{P}{P_0} \right) S \color{black}
         \end{align*}
+        \vspace{1ex}
       \end{column}
     \end{columns}
+    \hrule height 3pt
   \end{block}
 \end{column}
+
 \vrule width 5pt
 \begin{column}{1.5\sepwid}\end{column} % Empty spacer column
 % ------------------------- Third column -------------------------
@@ -234,9 +286,32 @@
   \setbeamercolor{block title}{fg=ngreen,bg=white} % Colors of the block titles
     \begin{center}
       \includegraphics[width=\figwid]{../dev/graphics/poster/recycled_contour.pdf}
+      \vspace{1.5ex}
+%------------------------- Population plot and parameter table ---------------
+        \begin{minipage}[h]{0.6\onecolwid}
+        \includegraphics[width=\figwid]{../dev/graphics/poster/recycled_pop.pdf}
+      \end{minipage}%
+      \begin{minipage}[h]{.3\onecolwid}
+        \vfill \textbf{Parameters} \vspace{3mm}\\
+        \begin{tabular}{l  r  c|c  l  r}
+          \toprule
+          $\alpha$ & .13 & \quad & \quad &
+            $\frac{b_S}{b_R}$ & 1.07 \\
+          $S_0$ & 1e3 & \quad & \quad &
+            $R_0$ & 1e3 \\
+          $P_0$ & 1e4 & \quad & \quad &
+            $K$ & 1e4 \\
+            \bottomrule
+          \end{tabular}\\\vspace{1ex}
 
-      \includegraphics[width=\figwid]{../dev/graphics/poster/recycled_pop.pdf}
+          \redc{5pt}  Susceptible\\
+          \bluec{5pt}  Resistant
+      \end{minipage}
+%-----------------------------------------------------------------------------
+
     \end{center}
+    \vspace{7pt}
+    \hrule height 3pt
 
     \begin{columns}[t]
       \begin{column}{.2\onecolwid}
@@ -244,10 +319,10 @@
           Reactions
         \end{center}
         \begin{align*}
-          S &\stackrel{b_S}{\rightarrow} 2S \\
-          S \color{norange}+ P\color{black} &\rightarrow  R \\
-          R &\rightarrow 2R \\
-          R &\rightarrow \varnothing \color{Purple} + P \color{black}
+          S & \stackrel{b_S}{\rightarrow} 2S \\
+          S \color{norange}+ P\color{black} & \stackrel{\alpha}{\rightarrow}  R \\
+          R & \stackrel{b_R}{\rightarrow} 2R \\
+          R & \stackrel{\delta}{\rightarrow} \varnothing \color{Purple} + P \color{black}
         \end{align*}
       \end{column}
         \vrule
@@ -263,8 +338,10 @@
         \frac{dR}{dt} & =  \alpha \color{norange} \left( \frac{P}{P_0} \right) \color{black} S  - \delta R \\[0.8ex]
         \color{norange} \frac{dP}{dt} & \color{norange} = -\alpha \left( \frac{P}{P_0} \right) S \color{Purple} + \delta R \color{black}
         \end{align*}
+        \vspace{1ex}
       \end{column}
     \end{columns}
+    \hrule height 3pt
   \end{block}
 \end{column}
 % ----------------------------------------------------------------
