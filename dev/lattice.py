@@ -20,61 +20,78 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 
-S_0 = 50
+S_0 = 100
 R_0 = 100
 K = 400
 PLASMIDS = 1e4
 SPACING = .01
-LATTICE_X = 20
-LATTICE_Y = 20
+LATTICE_X = 100
+LATTICE_Y = 100
 SYMMETRIC = True
 RECYCLING = False
 
-S = 0
-R = 1
+S, R, P = 0, 1, 2
 
-def choosePoint(lattice, TYPE):
+def choosePoint(lattice, TYPE, occupied):
 
-    if TYPE == S:
-        num = sum(sum(lattice[:,:,S]))
-    elif TYPE == R:
-        num = sum(sum(lattice[:,:,R]))
-    else:
-        print("Invalid type!")
-        return 0
+    choice = get_occupied(lattice, occupied, TYPE)
 
-    valid = []
-    probability = []
-    for x in range(len(lattice)):
-        for y in range(len(lattice[x])):
-            if lattice[x,y,TYPE] > 0:
-                valid += [(x,y)]
-                probability += [lattice[x,y,TYPE]/num]
+    return choice[0], choice[1]
 
-    index = np.random.choice(range(len(valid)), p=probability)
-    coords = valid[index]
-    # probability = [lattice[c[0], c[1], TYPE]/num for c in valid]
+def add_occupied(pos, occupied):
 
-    return coords[0], coords[1]
+    # Check if coordinates exist in list of occupied sites
+    if not pos in occupied:
+        occupied += [pos]
+
+    return
+
+def get_occupied(lattice, occupied, TYPE):
+
+    # Generate a probability distribution for picking a site using number of particles at site
+    distribution = list([lattice[pos[0],pos[1],TYPE] for pos in occupied[TYPE]])
+    # Normalize distribution
+    distribution /= sum(distribution)
+
+    # Randomly select an occupied lattice site using the distribution
+    choice = np.random.choice(len(occupied[TYPE]), p=distribution)
+
+    # Get the X,Y coordinates of that lattice site
+    choice = occupied[TYPE][choice]
+
+    return choice
+
 
 def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLASMIDS, num=0):
 
     plt.ion()
 
+    # If this was any more of a ballpark, I'd need some crackerjacks
+    time = 12.4748 + .00824437 * (LATTICE_X * LATTICE_Y)
+    t_sec = time % 60
+    t_min = time // 60
+    print('Estimated time is %d min %d sec ' % (t_min, t_sec))
 
     print("Beginning")
+
+    # Set up progress bar, if applicable
     if PBAR:
         writer = mpb.Writer((0, num))
         pbar = ProgressBar(fd=writer)
         pbar.start()
 
-    # Use this for thread safety
+    # Use this for thread safety -- without this, each thread will use the same
+    #   seed, and generated numbers won't be random.
     np.random.seed()
-
-
 
     # Construct lattice
     lattice = np.array([[[0,0]]*int(LATTICE_Y)]*int(LATTICE_X))
+
+    # Define arrays of occupied lattice sites
+    occupied = [[],[]]
+
+    # Set up subplots for plotting later
+    fig, axarr = plt.subplots(1,2)
 
     # Populate lattice
     print("Populating lattice")
@@ -82,31 +99,55 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
         x = np.random.randint(0,len(lattice))
         y = np.random.randint(0,len(lattice[0]))
         lattice[x,y,S] += 1
+
+        add_occupied([x,y], occupied[S])
+
     for i in range(int(r0)):
         x = np.random.randint(0,len(lattice))
         y = np.random.randint(0,len(lattice[0]))
         lattice[x,y,R] += 1
+        add_occupied([x,y], occupied[R])
+
+    for i in range(int(r0)):
+        x = np.random.randint(0,len(lattice))
+        y = np.random.randint(0,len(lattice[0]))
+        lattice[x,y,R] += 1
+        add_occupied([x,y], occupied[R])
 
     xdata, ydata, zdata = [], [], []
     for x in range(len(lattice)):
         for y in range(len(lattice[x])):
             xdata += [x]
             ydata += [y]
-            # plot R/S
             zdata += [lattice[x,y,R]/lattice[x,y,S]]
 
 
+    # Generate list of valid S and R positions
+    valid_S, valid_R = [], []
+    probability = []
+    for x in range(len(lattice)):
+        for y in range(len(lattice[x])):
+            if lattice[x,y,S] > 0:
+                valid_S += [(x,y)]
+                # probability += [lattice[x,y,TYPE]/num]
+            if lattice[x,y,R] > 0:
+                valid_R += [(x,y)]
 
-
+    # Initialize some relevant parameters
     t = 0.
     cur_t = 1e10
     plasmids = _PLASMIDS
     first = True
 
-    ims = []
     # Set up formatting for the movie files
+    ims_S, ims_R = [], []
+    ims_a = []
     Writer = animation.writers['ffmpeg']
     writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
+
+
+
+
 
     while t < t_max:
 
@@ -118,12 +159,11 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
         # Step 2 - Calculate reaction probability distribution
 
         a =[N_s * (1- (N_s+N_r)/K) * mu1,
-            # N_s * alpha,
-            N_s * (plasmids/_PLASMIDS) * alpha,
+            N_s * alpha,
+            # N_s * (plasmids/_PLASMIDS) * alpha,
             N_r * (1- (N_s+N_r)/K) * mu2,
             N_r * d]
         a0 = sum(a)
-
 
     #########################
         # Steps 3&5 - Choose mu according to probability distribution
@@ -134,14 +174,14 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
         # Reaction 1: S -> 2S
         if r1*a0 < a[0]:
             #Pick a lattice position to update
-            x, y = choosePoint(lattice, S)
+            x, y = choosePoint(lattice, S, occupied)
 
             lattice[x,y,S] += 1.
 
         # Reaction 2: S -> R
         elif r1 * a0 < sum(a[:2]) and N_s > 0:
 
-            x, y = choosePoint(lattice, S)
+            x, y = choosePoint(lattice, S, occupied)
 
             lattice[x,y,S] -= 1.
             lattice[x,y,R] += 1.
@@ -150,7 +190,7 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
         # Reaction 3: R -> R + S
         elif r1 * a0 < sum(a[:3]):
 
-            x, y = choosePoint(lattice, R)
+            x, y = choosePoint(lattice, R, occupied)
 
             if SYMMETRIC:
                 # Symmetric division - conserves plasmid number
@@ -162,7 +202,7 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
         # Reaction 4: R -> 0
         elif r1 * a0 < sum(a[:4]):
 
-            x, y = choosePoint(lattice, R)
+            x, y = choosePoint(lattice, R, occupied)
 
             if lattice[x,y,R] >= 1:
                 lattice[x,y,R] -= 1.
@@ -187,6 +227,7 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
 
         # Only save data if a certain interval between datapoints is met
         if cur_t > SPACING:
+            print("[ %.2f%% ]" % (100*t/t_max), end='  ')
             print(t)
             ns = N_s
             nr = N_r
@@ -197,29 +238,35 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
             # data.append([t, ns, nr, plasmids])
             cur_t = 0
 
-        # Plot results
-            ratioLattice = np.array(
-                [[lattice[x,y,1]/lattice[x,y,0]
-                for y in range(len(lattice[x]))]
-                    for x in range(len(lattice))])
+            # Plot results
+            plt.gcf().suptitle("T = %.4f" % t)
+            heatmap_S = axarr[S].imshow(lattice[:,:,S], cmap='Blues', interpolation='none')
+            heatmap_R = axarr[R].imshow(lattice[:,:,R], cmap='Reds', interpolation='none')
+            axarr[S].set_title("S Population")
+            axarr[R].set_title("R Population")
+            # ims_S.append([heatmap_S])
+            # ims_R.append([heatmap_R])
 
-
-            # fig, ax = plt.subplots()
-            heatmap = plt.pcolor(ratioLattice, cmap='bwr', vmin=8/10, vmax=10/8)
-            plt.title("T = %.4f" % t)
-            ims.append([heatmap])
+            ims_a.append([heatmap_S, heatmap_R])
 
             if first:
-                cbar = plt.colorbar(heatmap, label="R/S Ratio")
+                # cbar = plt.colorbar(heatmap_S, label="S Population")
+                # cbar = r_plot.colorbar(heatmap, label="R Population")
                 first = False
 
-            plt.draw()
+            # plt.cla()
+            # plt.draw()
+            # plt.pause(.01)
 
-            plt.pause(.1)
-
-        # print(t)
-    im_ani = animation.ArtistAnimation(plt.figure(1), ims, interval=50, repeat_delay=1000, blit=False)
-    im_ani.save("im.mp4", writer=writer)
+    print("Generating animation .")
+    # s_im_ani = animation.ArtistAnimation(plt.figure(1), ims_S, interval=50, repeat_delay=1000, blit=False)
+    # r_im_ani = animation.ArtistAnimation(plt.figure(1), ims_R, interval=50, repeat_delay=1000, blit=False)
+    a_im_ani = animation.ArtistAnimation(plt.figure(1), ims_a, interval=50, repeat_delay=1000, blit=True)
+    # s_im_ani.save("s_pop.mp4", writer=writer)
+    # r_im_ani.save("r_pop.mp4", writer=writer)
+    a_im_ani.save("a_pop.mp4", writer=writer)
+    # plt.pause(.5)
+    plt.close()
 
 
 #TODO: Store list of which cells have S and Rs, and pass it between looks instead
@@ -296,7 +343,7 @@ def runsim(alphas, mu1, mu2s, d, t_max, filename):
 
 def main():
 
-    runsim(alphas=[.1], mu1=.8, mu2s=[.72], d=.3, t_max=1, filename='graphics/lattice.dat')
+    runsim(alphas=[.2], mu1=.8, mu2s=[.72], d=.3, t_max=3, filename='graphics/lattice.dat')
     return
 
 
