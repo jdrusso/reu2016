@@ -5,7 +5,8 @@ PBAR = False
 
 import math
 import numpy as np
-from time import sleep
+from time import sleep, clock
+
 
 if PBAR:
     import multi_progress as mpb
@@ -22,11 +23,11 @@ import matplotlib.animation as animation
 
 S_0 = 500
 R_0 = 500
-K_SITE = 10 #Per site carrying capacity
+K_SITE = 5 #Per site carrying capacity
 PLASMIDS = 1e4
 SPACING = .1
-LATTICE_X = 100
-LATTICE_Y = 100
+LATTICE_X = 50
+LATTICE_Y = 50
 NUM_SITES = LATTICE_X*LATTICE_Y
 K = K_SITE * NUM_SITES
 SYMMETRIC = True
@@ -58,6 +59,8 @@ def get_occupied(lattice, occupied, TYPE):
         # occupied[TYPE]))
 
     # Generate a probability distribution for picking a site using number of particles at site
+
+    # TODO: This, too, is unimaginably slow
     distribution = [lattice[pos[0],pos[1],TYPE] for pos in occupied[TYPE]]
 
     # This ensures the probability distribution is seen by numpy as nonnegative.
@@ -66,19 +69,36 @@ def get_occupied(lattice, occupied, TYPE):
     # print(len(distribution))
 
     # Normalize distribution
-    distribution = [x + 1e-5 for x in distribution]
-    num = sum(distribution)
-    distribution /= num
+    # print("\n\n\n\n\n")
+    # print(distribution)
+    oldd = distribution
+    num = float(sum(distribution))
 
-    # Randomly select an occupied lattice site using the distribution
-    choice = np.random.choice(len(occupied[TYPE]), p=distribution)
+    #TODO: This is incredibly, unbelievably, mind-bendingly slow... WHY
+    distribution = list([0 if x < 1.e-4 else x for x in distribution])
+
+    # print(distribution)
+    distribution = list([float(x)/num for x in distribution])
+    # distribution /= float(num)
+    # print(distribution)
+
+    try:
+        # Randomly select an occupied lattice site using the distribution
+        choice = np.random.choice(len(occupied[TYPE]), p=distribution)
+    except ValueError:
+        print("Non-negative probabilities... Hm.")
+        print(oldd)
+        print('\n\n\n\n\n')
+        print(distribution)
+        print(min(distribution))
+        raise Exception
 
     # Get the X,Y coordinates of that lattice site
     choice = occupied[TYPE][choice]
 
     return choice
 
-def placeChild(pos, lattice, TYPE):
+def placeChild(pos, lattice, TYPE, occupied):
     x, y = pos[0], pos[1]
 
     direction = np.random.choice(range(5))
@@ -94,9 +114,15 @@ def placeChild(pos, lattice, TYPE):
     elif direction == 4:
         pass
 
-    # Check if selected location is at carrying capacity yet.
+    # TODO: Check if selected location is at carrying capacity yet.
+    x = x%LATTICE_X
+    y = y%LATTICE_Y
 
-    lattice[x%LATTICE_X,y%LATTICE_Y,TYPE] += 1
+
+    lattice[x,y,TYPE] += 1
+
+    #TODO: THIS SLOWS THE CODE DOWN A TON
+    add_occupied((x,y), occupied[TYPE])
 
     return
 
@@ -105,7 +131,7 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
 
     print("r0 is %d" % r0)
 
-    plt.ion()
+    # plt.ion()
 
     print("Beginning with K_SITE = %d" % K_SITE)
 
@@ -187,7 +213,7 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
             #Pick a lattice position to update
             x, y = choosePoint(lattice, S, occupied)
 
-            placeChild((x, y), lattice, S)
+            placeChild((x, y), lattice, S, occupied)
             N_s += 1
 
         # Reaction 2: S -> R
@@ -197,7 +223,7 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
 
             lattice[x,y,S] -= 1.
             # lattice[x,y,R] += 1.
-            placeChild((x, y), lattice, R)
+            placeChild((x, y), lattice, R, occupied)
 
             plasmids -= 1.
             N_s -= 1
@@ -211,12 +237,12 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
             # R -> R+R       Symmetric
             if SYMMETRIC:
                 # lattice[x,y,R] += 1.
-                placeChild((x, y), lattice, R)
+                placeChild((x, y), lattice, R, occupied)
                 N_r += 1
             # R -> R+S       Asymmetric division
             else:
                 # lattice[x,y,R] += 1.
-                placeChild((x, y), lattice, S)
+                placeChild((x, y), lattice, S, occupied)
                 N_s += 1
 
 
@@ -279,9 +305,10 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
                 # cbar = r_plot.colorbar(heatmap, label="R Population")
                 first = False
 
-            # plt.cla()
+            fig.canvas.draw() #Produces an animation without needing the pause below
+
             # plt.draw()
-            # plt.pause(.01)
+            # plt.pause(.1)
 
     print("Generating animation .")
     # s_im_ani = animation.ArtistAnimation(fig, ims_S, interval=50, repeat_delay=1000, blit=False)
@@ -290,7 +317,6 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
     # s_im_ani.save("s_pop.mp4", writer=writer)
     # r_im_ani.save("r_pop.mp4", writer=writer)
     a_im_ani.save("a_pop.mp4", writer=writer)
-    # plt.pause(.5)
     plt.close()
 
 
@@ -303,72 +329,13 @@ def runsim(alphas, mu1, mu2s, d, t_max, filename):
     T, X, Y, P, Params = [], [], [], [], []
     mu2 = mu2s[0]
     alpha = alphas[0]
-    # if THREADED:
-    #     jobs = []
-    #     q = multiprocessing.Queue()
-    #     workers = 0
-    # for mu2 in mu2s:
-        # for alpha in alphas:
 
-            # if THREADED:
-            #     worker = multiprocessing.Process(target=gillespie,
-            #         args =(mu1, mu2, alpha, d, t_max, q),
-            #         kwargs={"num":workers})
-            #     jobs.append(worker)
-            #     worker.start()
-            #     workers += 1
-
-            # else:
-                # data, params = gillespie(mu1, mu2, alpha, d, t_max)
     gillespie(mu1, mu2, alpha, d, t_max)
-
-                # t, x, y, p = [list(t) for t in zip(*data)]
-                # T += [t]
-                # X += [x]
-                # Y += [y]
-                # P += [p]
-                # Params += [params]
-
-    # if THREADED:
-    #     print("Started %d workers." % workers)
-    #     for data, params in iter(q.get, None):
-    #         t, x, y, p = [list(t) for t in zip(*data)]
-    #
-    #         T += [t]
-    #         X += [x]
-    #         Y += [y]
-    #         P += [p]
-    #         Params += [params]
-    #
-    #         print("Completed.")
-    #         workers -= 1
-    #         if workers == 0:
-    #             print("All data acquired.")
-    #             break
-    #
-    #     for job in jobs:
-    #         job.join()
-    #
-    #
-    # if filename is None:
-    #     global timestamp
-    #     filename = "output/out_{}.dat".format(timestamp)
-    #
-    # print("Saving data to %s" % filename)
-    #
-    # np.savetxt(filename,
-    #     np.transpose((T, X, Y, P, Params)),
-    #     fmt='%r',
-    #     delimiter='\n\n\n',
-    #     header="Alphas\tmu1\tmu2s\tt_max\tK\tP0\tRuns\tSymmetric\n%s|%s|%s|%d|%d|%d|%d|%r" %
-    #         (alphas, mu1, mu2s, t_max, K, PLASMIDS, len(T), SYMMETRIC))
-    #
-    # return T, X, Y, P, Params
 
 
 def main():
 
-    runsim(alphas=[.2], mu1=.8, mu2s=[.72], d=.3, t_max=5, filename='graphics/lattice.dat')
+    runsim(alphas=[.2], mu1=.8, mu2s=[.72], d=.3, t_max=1, filename='graphics/lattice.dat')
     return
 
 
