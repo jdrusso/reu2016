@@ -22,16 +22,18 @@ import matplotlib.animation as animation
 
 
 S_0 = 500
-R_0 = 500
+R_0 = 5
 K_SITE = 5 #Per site carrying capacity
-PLASMIDS = 1e4
+PLASMIDS = 5000
 SPACING = .1
-LATTICE_X = 50
-LATTICE_Y = 50
+LATTICE_X = 100
+LATTICE_Y = 100
 NUM_SITES = LATTICE_X*LATTICE_Y
 K = K_SITE * NUM_SITES
+
+CONST = False       #Hold alpha constant if True
 SYMMETRIC = True
-RECYCLING = True
+RECYCLING = False
 
 S, R, P = 0, 1, 2
 
@@ -41,13 +43,31 @@ def choosePoint(lattice, TYPE, occupied):
 
     return choice[0], choice[1]
 
+# Pass this the type-specific occupied list (i.e. occupied[S], not just occupied)
+# TODO: This is going to be very slow if it has to search the entire array every
+#   time...
 def add_occupied(pos, occupied):
 
-    # Check if coordinates exist in list of occupied sites
+    # Verify coordinates do not exist in list of occupied sites
     if not pos in occupied:
+        # If they don't, add them
         occupied += [pos]
+    else:
+        return -1
 
-    return
+    return 0
+
+def remove_occupied(pos, occupied):
+
+    # Check if coordinates exist in list of occupied sites
+    if pos in occupied:
+        # If coordinates exist, remove them
+        occupied.remove(pos)
+    else:
+        return -1
+
+    return 0
+
 
 def get_occupied(lattice, occupied, TYPE):
 
@@ -74,13 +94,34 @@ def get_occupied(lattice, occupied, TYPE):
     oldd = distribution
     num = float(sum(distribution))
 
+    #### SANITY CHECKS
+    # If num == 0, then all the occupied sites have 0 at them (bad)
+    if num == 0:
+        print("Error... Distribution is all zero")
+    if len(occupied[TYPE]) == 0:
+        print("No available occupied sites")
+
+
+
     #TODO: This is incredibly, unbelievably, mind-bendingly slow... WHY
     distribution = list([0 if x < 1.e-4 else x for x in distribution])
 
     # print(distribution)
-    distribution = list([float(x)/num for x in distribution])
     # distribution /= float(num)
     # print(distribution)
+
+    try:
+        # Normalize distribution
+        distribution = list([float(x)/num for x in distribution])
+    except ZeroDivisionError:
+        print("Distribution seems to be empty")
+        print(occupied[TYPE])
+        print(oldd)
+        print('\n\n\n\n\n')
+        print(distribution)
+        print(min(distribution))
+        print(max(distribution))
+        raise Exception
 
     try:
         # Randomly select an occupied lattice site using the distribution
@@ -119,12 +160,74 @@ def placeChild(pos, lattice, TYPE, occupied):
     y = y%LATTICE_Y
 
 
-    lattice[x,y,TYPE] += 1
+    incrementSite((x,y), lattice, TYPE, occupied)
 
     #TODO: THIS SLOWS THE CODE DOWN A TON
-    add_occupied((x,y), occupied[TYPE])
+    # add_occupied((x,y), occupied[TYPE])
 
     return
+
+
+# Add to the count at a lattice site, while also taking care of updating
+#   the list of occupied sites if necessary.
+def incrementSite(pos, lattice, TYPE, occupied):
+    x, y = pos[0], pos[1]
+    count = lattice[x,y,TYPE] #Saves a little lookup time
+    # print("Increment count is %.1f" % count)
+
+    #TODO: Remove this
+    if count < 0 or count > K_SITE:
+        print("Strange things are afoot %d" % count)
+
+    # If the site is at or above (yikes) its carrying capacity, do nothing
+    if count >= K_SITE:
+        # print("Site full")
+        pass
+
+    # Check if site is at capacity
+    elif count < K_SITE:
+        # Increment type count at site
+        lattice[x,y,TYPE] += 1
+
+        # Update occupied list
+        add_occupied(pos, occupied[TYPE])
+
+    else:
+        print("Error incrementing site..")
+
+    return
+
+def decrementSite(pos, lattice, TYPE, occupied):
+    x, y = pos[0], pos[1]
+    count = lattice[x,y,TYPE] #Saves a little lookup time
+    # print("Count is %.1f" % count)
+
+    #TODO: Remove this
+    if count < 0 or count > K_SITE:
+        print("Strange things are afoot %d" % count)
+
+    # If site is empty, there's nothing to remove
+    if count <= 1:
+        if count < 1:
+            print("Attempting to decrement empty site")
+            # remove_occupied(pos, occupied[TYPE])
+            # return
+
+        # If the site only had one member, it's going to be empty now
+        success = remove_occupied(pos, occupied[TYPE])
+
+    # If the site has enough, then remove one
+    elif count >= 1:
+        lattice[x,y,TYPE] -= 1
+
+
+    else:
+        print("Error decrementing site... TYPE=%d" % TYPE)
+        pass
+
+    return
+
+
 
 
 def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLASMIDS, num=0):
@@ -186,8 +289,12 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
     N_r = r0
 
 
-
+    oneTime = True
     while t < t_max:
+
+        if plasmids == 0 and oneTime:
+            print("Plasmids depleted")
+            oneTime = False
 
         # N_s = sum(sum(lattice[:,:,S]))
         # N_r = sum(sum(lattice[:,:,R]))
@@ -196,14 +303,21 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
         #########################
         # Step 2 - Calculate reaction probability distribution
 
-        a =[N_s * (1- (N_s+N_r)/K) * mu1,
-            # N_s * alpha,
-            N_s * (plasmids/_PLASMIDS) * alpha,
-            N_r * (1- (N_s+N_r)/K) * mu2,
-            N_r * d]
+        if not CONST:
+            a =[N_s * (1- (N_s+N_r)/K) * mu1,
+                N_s * (plasmids/_PLASMIDS) * alpha,
+                N_r * (1- (N_s+N_r)/K) * mu2,
+                N_r * d]
+
+        if CONST:
+            a =[N_s * (1- (N_s+N_r)/K) * mu1,
+                N_s * alpha,
+                N_r * (1- (N_s+N_r)/K) * mu2,
+                N_r * d]
+
         a0 = sum(a)
 
-    #########################
+        #########################
         # Steps 3&5 - Choose mu according to probability distribution
         #   and update number of particles.
         r1 = np.random.rand()
@@ -214,38 +328,38 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
             #Pick a lattice position to update
             x, y = choosePoint(lattice, S, occupied)
 
-            placeChild((x, y), lattice, S, occupied)
             N_s += 1
+            placeChild((x, y), lattice, S, occupied)
 
         # Reaction 2: S -> R
         elif r1 * a0 < sum(a[:2]) and N_s > 0:
-
             x, y = choosePoint(lattice, S, occupied)
 
-            lattice[x,y,S] -= 1.
-            # lattice[x,y,R] += 1.
+            N_s -= 1
+            decrementSite((x,y), lattice, S, occupied)
+
+            N_r += 1
             placeChild((x, y), lattice, R, occupied)
 
             plasmids -= 1.
-            N_s -= 1
-            N_r += 1
 
         # Reaction 3: R -> R + S
         elif r1 * a0 < sum(a[:3]):
-
             x, y = choosePoint(lattice, R, occupied)
 
             # R -> R+R       Symmetric
             if SYMMETRIC:
-                # lattice[x,y,R] += 1.
-                placeChild((x, y), lattice, R, occupied)
+
                 N_r += 1
+                placeChild((x, y), lattice, R, occupied)
+
                 _PLASMIDS += 1
+
             # R -> R+S       Asymmetric division
             else:
-                # lattice[x,y,R] += 1.
-                placeChild((x, y), lattice, S, occupied)
+
                 N_s += 1
+                placeChild((x, y), lattice, S, occupied)
 
 
         # Reaction 4: R -> 0
@@ -253,9 +367,9 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
 
             x, y = choosePoint(lattice, R, occupied)
 
-            if lattice[x,y,R] >= 1:
-                lattice[x,y,R] -= 1.
-                N_r -= 1
+            if lattice[x,y,R] >= 1: #TODO: This is slightly redundant, decrementSite already checks this
+                N_r -=   1
+                decrementSite((x,y), lattice, R, occupied)
                 if RECYCLING:
                     plasmids += 1.
 
@@ -279,7 +393,7 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
         if cur_t > SPACING:
             print("[ %.2f%% ]" % (100*t/t_max), end='  ')
             print("%.4f" % t, end='\t')
-            print("Ns = %d, Nr = %d" % (N_s, N_r), end='\t')
+            print("Ns = %d, Nr = %d, P=%d" % (N_s, N_r, plasmids), end='\t')
             print("%.2f sec since last" % (time() - walltime))
             walltime = time()
             ns = N_s
@@ -328,7 +442,7 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
 # of generating the list every time
 def runsim(alphas, mu1, mu2s, d, t_max, filename):
 
-    print("Beginning simulation runs...")
+    # print("Beginning simulation runs...")
 
     T, X, Y, P, Params = [], [], [], [], []
     mu2 = mu2s[0]
@@ -339,7 +453,7 @@ def runsim(alphas, mu1, mu2s, d, t_max, filename):
 
 def main():
 
-    runsim(alphas=[.12], mu1=.8, mu2s=[.75], d=.3, t_max=30, filename='graphics/lattice.dat')
+    runsim(alphas=[.6], mu1=.8, mu2s=[.75], d=.3, t_max=10, filename='graphics/lattice.dat')
     return
 
 
