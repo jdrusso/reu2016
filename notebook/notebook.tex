@@ -615,6 +615,68 @@ for the S and R populations, a term must be moved from the R to S equation.
 \frac{dP}{dt} & = -\alpha P
 \end{align}
 
+\labday{July 25, 2016}
+\obj{Revisit lattice simulation.}
+
+Now that I've gotten good results for the well-mixed case, it's time to revisit
+the simulation on a lattice. First, I want to characterize how long my code
+takes to run as-is, since that could be a large issue. If there's some huge
+inefficiency, I'd like to be able to start thinking about that early on as I
+design the simulation, instead of needing to go back and fix it.
+
+A simulation on a 20x20 to t=3.0 took a little over two minutes, or about 19 seconds without
+live plotting. The same simulation with a 50x50 lattice without live plotting
+had a runtime of 36 seconds, 87s for a 100x100, and for a 200x200.
+
+My most immediate goals for the lattice simulation are to
+\begin{itemize}
+  \item Add arrays to track S, R, and P occupied lattice sites
+  \item Have animation actually update title with current time
+  \item Characterize runtimes
+\end{itemize}
+
+I made a fit to the runtimes which came out to $12.4748 + 0.00824437 x$ where $x$
+is the total number of lattice sites.
+
+By making a few changes to how an occupied lattice site is selected, I was able to
+reduce the ticks per call of get\_occupied by about 100x.
+
+\labday{July 26, 2016}
+\obj{Continue work on lattice simulation.}
+
+Goals for today:
+
+\begin{itemize}
+  \item Keep track of P population
+
+  \item Add integer counters for $N_s$ and $N_r$ for efficiency (avoid having to recalculate every loop).
+  This may not be necessary if this isn't causing a significant performance hit.
+\end{itemize}
+
+JJ has also brought me \"Nonlinear Dynamics and Chaos\" by Steven Strogatz.
+
+
+\labday{July 27, 2016}
+\obj{Continue work on lattice simulation, and update population equations to increment
+total number of available plasmids whenever a symmetric R division occurs.}
+
+I've added a few functions to clean up the simulation, and handle adding/removing
+members from the lattice better. I ran a simulation to $T_max=10$ using a 50x50 lattice,
+$\delta=0.3$, $\alpha=60, \mu2 = 0.75$, $S_0 = 500, R_0 = 5, P0 = 2e4, K_site=5$, under the linear
+$\alpha$ case. This produced an interesting transition, where you can watch the
+R boom until the plasmids are depleted, then die out as S takes over. This
+took about 3 minutes to run.
+
+I'm trying another run with the same parameters, but with a 100x100 lattice and $P0=5000$.
+This took significantly longer, about 17 minutes
+
+I'm storing interesting output animations in the `dev/videos` directory. I'm
+also doing some basic profiling of my code, to see if I can help optimize it a little.
+Since the lattice is so much more complex than the well-mixed case, it naturally
+carries a fairly significant performance hit with it. Mitigating this has already
+given me speedups of a few hundred times, but I'm still doing a lot of array searches
+all over. On this topic, switching from plcolor to imshow for the heatmap was
+a huge improvement in speed.
 
 %------------------------------------------------------------------------------
 %	BIBLIOGRAPHY
