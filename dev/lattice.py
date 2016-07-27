@@ -5,7 +5,7 @@ PBAR = False
 
 import math
 import numpy as np
-from time import sleep, clock
+from time import sleep, time
 
 
 if PBAR:
@@ -31,7 +31,7 @@ LATTICE_Y = 50
 NUM_SITES = LATTICE_X*LATTICE_Y
 K = K_SITE * NUM_SITES
 SYMMETRIC = True
-RECYCLING = False
+RECYCLING = True
 
 S, R, P = 0, 1, 2
 
@@ -129,11 +129,12 @@ def placeChild(pos, lattice, TYPE, occupied):
 
 def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=PLASMIDS, num=0):
 
-    print("r0 is %d" % r0)
+    walltime = time()
 
+    # print("r0 is %d" % r0)
     # plt.ion()
 
-    print("Beginning with K_SITE = %d" % K_SITE)
+    print("Beginning with K_SITE = %d, and a total K of %d" % (K_SITE, K))
 
     # Set up progress bar, if applicable
     if PBAR:
@@ -196,8 +197,8 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
         # Step 2 - Calculate reaction probability distribution
 
         a =[N_s * (1- (N_s+N_r)/K) * mu1,
-            N_s * alpha,
-            # N_s * (plasmids/_PLASMIDS) * alpha,
+            # N_s * alpha,
+            N_s * (plasmids/_PLASMIDS) * alpha,
             N_r * (1- (N_s+N_r)/K) * mu2,
             N_r * d]
         a0 = sum(a)
@@ -239,6 +240,7 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
                 # lattice[x,y,R] += 1.
                 placeChild((x, y), lattice, R, occupied)
                 N_r += 1
+                _PLASMIDS += 1
             # R -> R+S       Asymmetric division
             else:
                 # lattice[x,y,R] += 1.
@@ -277,7 +279,9 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
         if cur_t > SPACING:
             print("[ %.2f%% ]" % (100*t/t_max), end='  ')
             print("%.4f" % t, end='\t')
-            print("Ns = %d, Nr = %d" % (N_s, N_r))
+            print("Ns = %d, Nr = %d" % (N_s, N_r), end='\t')
+            print("%.2f sec since last" % (time() - walltime))
+            walltime = time()
             ns = N_s
             nr = N_r
             if ns == 1:
@@ -313,7 +317,7 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, _PLASMIDS=
     print("Generating animation .")
     # s_im_ani = animation.ArtistAnimation(fig, ims_S, interval=50, repeat_delay=1000, blit=False)
     # r_im_ani = animation.ArtistAnimation(fig, ims_R, interval=50, repeat_delay=1000, blit=False)
-    a_im_ani = animation.ArtistAnimation(fig, ims_a, interval=100, repeat_delay=1000, blit=False)
+    a_im_ani = animation.ArtistAnimation(fig, ims_a, interval=300, blit=False)
     # s_im_ani.save("s_pop.mp4", writer=writer)
     # r_im_ani.save("r_pop.mp4", writer=writer)
     a_im_ani.save("a_pop.mp4", writer=writer)
@@ -335,7 +339,7 @@ def runsim(alphas, mu1, mu2s, d, t_max, filename):
 
 def main():
 
-    runsim(alphas=[.2], mu1=.8, mu2s=[.72], d=.3, t_max=1, filename='graphics/lattice.dat')
+    runsim(alphas=[.12], mu1=.8, mu2s=[.75], d=.3, t_max=30, filename='graphics/lattice.dat')
     return
 
 
