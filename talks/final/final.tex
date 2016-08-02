@@ -1,4 +1,6 @@
-\documentclass[10pt]{beamer}
+%\documentclass[10pt, notes]{beamer}       % print frame + notes
+% \documentclass[10pt, notes=only]{beamer}   % only notes
+\documentclass[12pt]{beamer}              % only frames
 
 \usetheme[progressbar=frametitle]{metropolis}
 
@@ -8,17 +10,27 @@
 \usepackage{pgfplots}
 \usepgfplotslibrary{dateplot}
 
+\usepackage{multido}
+\usepackage{totcount}
+\regtotcounter{section}
+
 \usepackage{xspace}
 \newcommand{\themename}{\textbf{\textsc{metropolis}}\xspace}
 
+
+% Set up table of contents
 \AtBeginSection[]
 {
-   \begin{frame}
-       \frametitle{Outline}
-        %  \setbeamertemplate{section in toc}[sections numbered]
-       \tableofcontents[currentsection]
-   \end{frame}
+\begin{frame}<beamer>
+\frametitle{Outline}
+\tableofcontents[
+  currentsection,
+  sectionstyle=show/shaded,
+  subsectionstyle=show/show/hide
+]
+\end{frame}
 }
+
 
 
 \title{Simulation and Theory of Bacterial Transformation}
@@ -31,45 +43,78 @@
 
 \maketitle
 
-\section{Motivation}
+\section{Introduction}
+
+\subsection{Motivation}
 \begin{frame}{Motivation}
-  \:
+  \begin{itemize}
+    \item Ubiquitous threat of antibiotic resistance
+    \item Main mechanisms of transmission
+  \end{itemize}
 \end{frame}
+\note[itemize]{
+\item Threat of resistance even in well-controlled diseases (TB)
+\item  Main mechanisms of transmission are conjugation and transformation - we focus on transformation
+}
 
 
-\section{Background}
+
 \subsection{Biological Background}
+%TODO: Label this as Biological Background - Plasmids ?
 \begin{frame}[fragile]{Plasmids}
-\:
 \end{frame}
 
 \begin{frame}{Transformation and Conjugation}
-\:
 \end{frame}
 
 
+
+
+\section{Simulation}
 \subsection{Model}
-\begin{frame}{Population Dynamics Model}
-  \:
+\begin{frame}{Population Dynamics Model - %
+  \only<1-1>{Constant}%
+  \only<2-2>{\color{BurntOrange}Linear}%
+  \only<3-3>{\color{Purple}Recycled}}
+
+  \begin{align*}
+    \frac{dS}{dt} & = b_S \left(1 - \frac{S + R}{K}\right)S - \alpha
+      \only<2->{ \color{BurntOrange}\left( \frac{P}{P_0} \right)}
+      \color{black} S \\[0.8ex]
+%
+    \frac{dR}{dt} & = b_R \left(1 - \frac{S + R}{K}\right)R + \alpha
+    \only<2->{\color{BurntOrange}\left( \frac{P}{P_0} \right)}
+    \color{black} S - \delta R \\[0.8ex]
+%
+    \only<2->{
+      \color{BurntOrange} \frac{dP}{dt} & \color{BurntOrange} = -\alpha \left( \frac{P}{P_0} \right) S
+    }
+    \only<3->{\color{Purple} + \delta R}
+  \end{align*}
+
 \end{frame}
 
 
-\subsection{Simulation Methods}
+\subsection{Methods}
 
 \begin{frame}{Kinetic Monte Carlo Method}
-  \:
 \end{frame}
 
 \begin{frame}{Optimizations}
-  \:
 \end{frame}
 
+
+
+
 \section{Results}
-asdf
+\subsection{Well-Mixed}
+\begin{frame}{Parameter Space}
+\end{frame}
+
+\subsection{Lattice}
 
 
 \section{Conclusions}
-asdf
 
 
 
