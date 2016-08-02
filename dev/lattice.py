@@ -21,13 +21,13 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 
-S_0 = 500
+S_0 = 5000
 R_0 = 5
-K_SITE = 10 #Per site carrying capacity
-PLASMIDS = 3000
+K_SITE = 5 #Per site carrying capacity
+PLASMIDS = 10000
 SPACING = .1
-LATTICE_X = 75
-LATTICE_Y = 75
+LATTICE_X = 100
+LATTICE_Y = 100
 NUM_SITES = LATTICE_X*LATTICE_Y
 K = K_SITE * NUM_SITES
 
@@ -152,7 +152,10 @@ def get_occupied_p(lattice, occupied):
     # Build list of spots occupied by both S and P
     # TODO: Speed this up, this will be slow
     # print(len(occupied[P]))
-    occ = [x for x in occupied[S] if x in occupied[P]]
+    # occ = [x for x in occupied[S] if x in occupied[P]]
+    occ = list(filter(set(occupied[P]).__contains__, occupied[S]))
+
+
 
     # Remove any entries that don't have available neighbors.
     #   This function is only called for transformation, so it will *always* need
@@ -710,7 +713,7 @@ def runsim(alphas, mu1, mu2s, d, t_max, filename):
 
 def main():
 
-    runsim(alphas=[.5], mu1=.8, mu2s=[.75], d=.3, t_max=5, filename='graphics/lattice.dat')
+    runsim(alphas=[.6], mu1=.8, mu2s=[.75], d=.3, t_max=5, filename='graphics/lattice.dat')
     return
 
 
