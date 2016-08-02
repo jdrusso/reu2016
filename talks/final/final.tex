@@ -10,10 +10,6 @@
 \usepackage{pgfplots}
 \usepgfplotslibrary{dateplot}
 
-\usepackage{multido}
-\usepackage{totcount}
-\regtotcounter{section}
-
 \usepackage{xspace}
 \newcommand{\themename}{\textbf{\textsc{metropolis}}\xspace}
 
@@ -31,12 +27,15 @@
 \end{frame}
 }
 
+% Make alert boxes have filled backgrounds
+\metroset{block=fill}
+
 
 
 \title{Simulation and Theory of Bacterial Transformation}
 \date{August 5, 2016}
 \author{JD Russo, JJ Dong}
-\institute{Department of Physics and Astronomy, Bucknell University}
+\institute{Department of Physics and Astronomy\\Bucknell University}
 %TODO: Add .gif of populations evolving here, or some snazzy graphic
 
 \begin{document}
@@ -51,6 +50,13 @@
     \item Ubiquitous threat of antibiotic resistance
     \item Main mechanisms of transmission
   \end{itemize}
+
+  \vspace*{\fill}
+    \begin{alertblock}{Goal}
+      Identify what most significantly affects resistant cell dominance.
+    \end{alertblock}
+  \vspace*{\fill}
+
 \end{frame}
 \note[itemize]{
 \item Threat of resistance even in well-controlled diseases (TB)
@@ -62,15 +68,72 @@
 \subsection{Biological Background}
 %TODO: Label this as Biological Background - Plasmids ?
 \begin{frame}[fragile]{Plasmids}
+  \begin{itemize}
+    \item Small, independently replicating genetic material
+    \item Often include DNA segments encoding antibiotic resistance
+    \item Imposes a fitness cost on host cell
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Transformation and Conjugation}
-\end{frame}
 
+  \begin{itemize}
+    \item \textbf{Transformation:} Cell incorporates plasmid from environment
+    \item \textbf{Conjugation:} Plasmid transferred between cells %TODO: Make a similar figure for conjugation
+  \end{itemize}
+
+  \vspace*{\fill}
+  \centerline{\includegraphics[width=.5\paperwidth]{../../dev/graphics/poster/transformation.pdf}}
+  % \vspace*{\fill}
+\end{frame}
+\note[itemize]{
+\item Transformation is the process where a cell incorporates a plasmid from its
+environment, translating any encoded genes
+\item Conjugation is horizontal transfer of a plasmid between two cells
+\item We assume transformation is the primary mechanism of plasmid transfer
+%TODO: WHY???
+}
 
 
 
 \section{Simulation}
+%TODO: Should this go here?
+\begin{frame}{Simulation vs Modeling}
+  \begin{itemize}
+  \item Stochastic vs Deterministic
+  \item Information about average behavior vs specific system
+  \end{itemize}
+\end{frame}
+\note[itemize]{
+\item Mathematical modeling of populations is deterministic - captures info about averages
+\item Simulations can incorporate stochastic reactions
+\item Individual experiments \"noisily\" follow model
+}
+
+% TODO: Add figure of simulated populations over time along with modeled
+\begin{frame}{Simulation vs Modeling}
+
+  \begin{align}
+    \uncover<1->{&\text{Reaction} & \quad & R \stackrel{\delta}{\longrightarrow} \varnothing \\}
+    \uncover<2->{
+      &\text{Differential equation}&&\frac{dR}{dt} = - \delta R\\
+      &&& R(t) = R_0  e^{- \delta t} \\
+    }
+    \notag
+  \end{align}
+
+  % \vspace*{\fill}
+  % \vskip-1.5em %NOTE: This may be necessary if the tags are shown on the hidden equation`
+\end{frame}
+\note[itemize]{
+\item This reaction describes a situation where a resistant cell dies on average every
+ $\delta$ time units.
+\item When plotted, this describes an exponential function that symptotically
+  approaches zero.
+\item However, in simulation, this is not a smooth curve. This is a step-like function,
+  where at some discrete time the population jumps from one to zero and goes extinct.
+}
+
 \subsection{Population Dynamics Model}
 \begin{frame}{Population Dynamics Model - %
   \only<1-1>{Constant}%
@@ -95,12 +158,29 @@
 \end{frame}
 
 
-\subsection{Methods}
+\subsection{Simulation Methods}
+
 
 \begin{frame}{Kinetic Monte Carlo Method}
+  \begin{itemize}
+    \item Initially used to simulation chemical reactions
+    \item Captures information about dynamics of a growing system
+  \end{itemize}
+  \vspace*{\fill}
+  % TODO: Make a more detailed flow chart
+  \centerline{\includegraphics[width=.75\paperwidth]{../../dev/graphics/poster/gillespie.pdf}}
 \end{frame}
 
-\begin{frame}{Optimizations}
+\note[itemize]{
+\item Do I even want to say the part about capturing the dynamics?
+}
+
+\begin{frame}[fragile]{Optimizations}
+  \begin{itemize}
+    \item Sets vs. lists
+    \item Occupancy lists
+    \item \verb|imshow| vs. \verb|plcolor| %TODO: Does anyone care about this?
+  \end{itemize}
 \end{frame}
 
 
