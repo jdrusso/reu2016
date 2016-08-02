@@ -26,8 +26,8 @@ R_0 = 5
 K_SITE = 10 #Per site carrying capacity
 PLASMIDS = 3000
 SPACING = .1
-LATTICE_X = 50
-LATTICE_Y = 50
+LATTICE_X = 75
+LATTICE_Y = 75
 NUM_SITES = LATTICE_X*LATTICE_Y
 K = K_SITE * NUM_SITES
 
@@ -153,6 +153,12 @@ def get_occupied_p(lattice, occupied):
     # TODO: Speed this up, this will be slow
     # print(len(occupied[P]))
     occ = [x for x in occupied[S] if x in occupied[P]]
+
+    # Remove any entries that don't have available neighbors.
+    #   This function is only called for transformation, so it will *always* need
+    #   empty neighbors.
+    filter(lambda x: hasAvailableNeighbors(x, lattice), occ)
+
     # print(occupied)
     # print(occ)
 
@@ -171,12 +177,6 @@ def get_occupied_p(lattice, occupied):
     # If num == 0, then all the occupied sites have 0 at them (bad)
     if num == 0:
         # print("No sites with an S and a P")
-        # print(occ)
-        # print(occupied[S], end='\n\n\n')
-        # print(occupied[P])
-        # raise Exception
-        # traceback.print_exc(file=sys.stdout)
-        # sys.exit(-1)
         return -1, -1
     if len(occ) == 0:
         print("No available occupied sites")
@@ -217,11 +217,13 @@ def get_occupied_p(lattice, occupied):
 
 
 # Check if there's an empty slot adjacent to pos
-def hasAvailableNeighbors(pos, lattice):
+def hasAvailableNeighbors(pos, lattice, debug=False):
 
     x, y = pos[0], pos[1]
 
     if x == -1 or y == -1:
+        if debug:
+            print("Neg 1")
         return False
 
 
@@ -231,7 +233,6 @@ def hasAvailableNeighbors(pos, lattice):
     for _x, _y in [[-1, 0], [1, 0], [0,-1], [0, 1]]:
             t += lattice[(x+_x) % LATTICE_X, (y+_y) % LATTICE_Y, S]
             t += lattice[(x+_x) % LATTICE_X, (y+_y) % LATTICE_Y, R]
-            # print(((x+_x) % LATTICE_X, (y+_y) % LATTICE_Y, t))
 
     # If at least one adjacent site is not yet at carrying capacity
     if t < K_SITE * 4:
@@ -239,37 +240,54 @@ def hasAvailableNeighbors(pos, lattice):
         return True
 
     # If all adjacent sites are full
-    # print("None")
+    if debug:
+        print("None [%d / %d]" % (t, K_SITE*4))
     return False
 
 def placeChild(pos, lattice, TYPE, occupied):
 
     x, y = pos[0], pos[1]
 
+    assert hasAvailableNeighbors(pos, lattice)
 
-    while True:
-        direction = np.random.choice(range(5))
-        if direction == 0 and lattice[x,(y+1)%LATTICE_Y,S]+lattice[x,(y+1)%LATTICE_Y,R] < K_SITE:
-            y += 1
-            break
-
-        elif direction == 1 and lattice[x,(y-1)%LATTICE_Y,S]+lattice[x,(y-1)%LATTICE_Y,R] < K_SITE:
-            y -= 1
-            break
-
-        elif direction == 2 and lattice[(x+1)%LATTICE_X,y,S]+lattice[(x+1)%LATTICE_X,y,R] < K_SITE:
-            x += 1
-            break
-
-        elif direction == 3 and lattice[(x-1)%LATTICE_X,y,S]+lattice[(x-1)%LATTICE_X,y,R] < K_SITE:
-            x -= 1
-            break
-
-    # elif direction == 4 and lattice[x,y,S]+lattice[x,y,R] < K_SITE:
-    #     pass
-    else:
-        print("Error: No free adjacent sites %d" % TYPE)
+    # Generate valid directions
+    # TODO: This does NOT include the center, the actual original position
+    directions = [[-1, 0], [1, 0], [0,-1], [0, 1]]
+    filter(lambda _x, _y: lattice[x+_x, y+_y, S] + lattice[x+_x, y+_y, R] < K_SITE, directions)
+    # print(directions)
+    if len(directions) == 0:
+        print("No valid directions")
         raise Exception
+
+    direction = np.random.choice(len(directions))
+    x += directions[direction][0]
+    y += directions[direction][1]
+
+    # while True:
+    #     direction = np.random.choice(range(4))
+    #     if direction == 0 and lattice[x,(y+1)%LATTICE_Y,S]+lattice[x,(y+1)%LATTICE_Y,R] < K_SITE:
+    #         y += 1
+    #         break
+    #
+    #     elif direction == 1 and lattice[x,(y-1)%LATTICE_Y,S]+lattice[x,(y-1)%LATTICE_Y,R] < K_SITE:
+    #         y -= 1
+    #         break
+    #
+    #     elif direction == 2 and lattice[(x+1)%LATTICE_X,y,S]+lattice[(x+1)%LATTICE_X,y,R] < K_SITE:
+    #         x += 1
+    #         break
+    #
+    #     elif direction == 3 and lattice[(x-1)%LATTICE_X,y,S]+lattice[(x-1)%LATTICE_X,y,R] < K_SITE:
+    #         x -= 1
+    #         break
+    #
+    # #TODO: Do we want to include this? Not allowing a daughter cell at the original site
+    # #   guarantees spread, but diffusion will take care of that too.
+    # # elif direction == 4 and lattice[x,y,S]+lattice[x,y,R] < K_SITE:
+    # #     pass
+    # else:
+    #     print("Error: No free adjacent sites %d" % TYPE)
+    #     raise Exception
 
     x = x%LATTICE_X
     y = y%LATTICE_Y
@@ -379,17 +397,20 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, p0=PLASMID
 
     # Set up subplots for plotting later
     fig, axarr = plt.subplots(2,2)
-
     S_pop_map = axarr[0][0]
     R_pop_map = axarr[0][1]
     P_pop_map = axarr[1][1]
     pop_plot  = axarr[1][0]
+    # fig = plt.figure()
+    # S_pop_map = plt.subplot(231)
+
 
     # axarr[1][1].set_yscale('log')
     pop_plot.set_yscale('log')
 
     S_pop_map.set_title("S Population")
     R_pop_map.set_title("R Population")
+    P_pop_map.set_title("P Population")
 
     # Populate lattice
     print("Populating lattice")
@@ -492,19 +513,46 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, p0=PLASMID
             #Pick a lattice position to update
             x, y = -1, -1
 
+            #TODO: May be blocking for a long time on this, esp. on the get_occupied_p call
+            c = 0
 
-            while not hasAvailableNeighbors((x, y), lattice):
-                if not CONST:
-                    x, y = get_occupied_p(lattice, occupied)
-                else:
+            # skipLoop = False
+            # debug = False
+            # while not hasAvailableNeighbors((x, y), lattice, debug=debug):
+            #     if not CONST:
+            #         x, y = get_occupied_p(lattice, occupied)
+            #         # If there are no sites with an S and a P, transformation cannot
+            #         #   occur, so go to the next time step.
+            #         if x == -1 and y == -1:
+            #             skipLoop = True
+            #             break
+            #         c+=1
+            #         if c > 5:
+            #             print((c, x, y))
+            #             debug = True
+            #     else:
+            #         x, y = choosePoint(lattice, S, occupied)
+            # if skipLoop:
+            #     continue
+            skipLoop = False
+            if not CONST:
+                x, y = get_occupied_p(lattice, occupied)
+                if x == -1 and y == -1:
+                    continue
+            elif CONST:
+                x, y = choosePoint(lattice, S, occupied)
+                while not hasAvailableNeighbors((x, y), lattice):
                     x, y = choosePoint(lattice, S, occupied)
+                    if x == -1 and y == -1:     # If there are no sites with S
+                        return
 
-
-            if x == -1 or y == -1:
-                # This means there are no sites with a plasmid and an S
-                # TODO: End simulation here?
-                return
-                continue
+            #NOTE: This is already handled by hasAvailableNeighbors -- it will
+            #   never return true while x or y are -1
+            # if x == -1 or y == -1:
+            #     # This means there are no sites with a plasmid and an S
+            #     # TODO: End simulation here?
+            #     # return
+            #     continue
 
             if decrementSite((x,y), lattice, S, occupied):
                 N_s -= 1
@@ -612,21 +660,17 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, p0=PLASMID
             heatmap_P = P_pop_map.imshow(lattice[:,:,P], cmap='Greens', interpolation='none', vmin=0, vmax=K_SITE)
 
 
-            pop_S = pop_plot.plot(ts, ns, color='r')
-            pop_S = pop_plot.plot(ts, nr, color='b')
-            # pop_R = axarr[1][1].plot(ts, nr, color='b')
-            # ims_S.append([heatmap_S])
-            # ims_R.append([heatmap_R])
+            pop_S, = pop_plot.plot(ts, ns, color='r')
+            pop_R, = pop_plot.plot(ts, nr, color='b')
 
             ymax = 10**np.ceil(np.log10(max([max(ns), max(nr)])))
             ymin = 10**np.floor(np.log10(min([min(ns), min(nr)])))
             pop_plot.set_ylim([10,ymax])
             plt.tight_layout()
-            # axarr[1][1].set_ylim([10,ymax])
 
             fig.canvas.draw() #Produces an animation without needing the pause below
 
-            ims_a.append([heatmap_S, heatmap_R, heatmap_P, pop_S])
+            ims_a.append([heatmap_S, heatmap_R, heatmap_P, pop_S, pop_R])
 
             if first:
                 # cbar = plt.colorbar(heatmap_S, label="S Population")
@@ -641,14 +685,14 @@ def gillespie(mu1, mu2, alpha, d, t_max, q=False, s0 = S_0, r0 = R_0, p0=PLASMID
     print("Generating animation .")
     # s_im_ani = animation.ArtistAnimation(fig, ims_S, interval=50, repeat_delay=1000, blit=False)
     # r_im_ani = animation.ArtistAnimation(fig, ims_R, interval=50, repeat_delay=1000, blit=False)
-    a_im_ani = animation.ArtistAnimation(fig, ims_a, interval=300, blit=False)
+    a_im_ani = animation.ArtistAnimation(fig, ims_a, interval=300, blit=True)
     # s_im_ani.save("s_pop.mp4", writer=writer)
     # r_im_ani.save("r_pop.mp4", writer=writer)
     a_im_ani.save("a_pop.mp4", writer=writer)
     plt.close()
     # conditions = {"mu1": mu1, "mu2":mu2, }
 
-    return data, conditions
+    return data#, conditions
 
 
 #TODO: Store list of which cells have S and Rs, and pass it between looks instead
@@ -666,7 +710,7 @@ def runsim(alphas, mu1, mu2s, d, t_max, filename):
 
 def main():
 
-    runsim(alphas=[.5], mu1=.8, mu2s=[.75], d=.3, t_max=20, filename='graphics/lattice.dat')
+    runsim(alphas=[.5], mu1=.8, mu2s=[.75], d=.3, t_max=5, filename='graphics/lattice.dat')
     return
 
 
