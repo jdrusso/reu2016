@@ -1,12 +1,14 @@
-\documentclass[10pt, notes]{beamer}       % print frame + notes
+% \documentclass[10pt, notes]{beamer}       % print frame + notes
 % \documentclass[10pt, notes=only]{beamer}   % only notes
-% \documentclass[12pt]{beamer}              % only frames
+\documentclass[11pt]{beamer}              % only frames
 
 \usetheme[progressbar=frametitle]{metropolis}
 
 \usepackage{booktabs}
 \usepackage[scale=2]{ccicons}
 \usepackage[export]{adjustbox}
+\usepackage{subcaption}
+\usepackage{animate}
 
 \usepackage{pgfplots}
 \usepgfplotslibrary{dateplot}
@@ -55,6 +57,7 @@
   \begin{itemize}
     \item Ubiquitous threat of antibiotic resistance
     \item Transmission of resistance via plasmids
+    \item Transformation of susceptible bacteria to resistant %TODO: Do I need to say more here about S -> R
     \item Identify what most significantly affects resistant cell dominance.
     %TODO: Something along the lines of "Investigating what gives rise to conditions
     % where antibiotic resistance dominates"
@@ -87,22 +90,82 @@
 \begin{frame}{Transformation and Conjugation}
 
   \begin{itemize}
-    \item \textbf{Transformation:} Cell incorporates plasmid from environment
     \item \textbf{Conjugation:} Plasmid transferred between cells
+    \item \textbf{Transformation:} Cell incorporates plasmid from environment
+    \begin{itemize}
+      \item Three main regimes
+    \end{itemize}
   \end{itemize}
-
-  \vspace*{\fill}
-  \centerline{\includegraphics[width=.5\paperwidth]{../../dev/graphics/poster/transformation.pdf}}
+  % \centerline{\includegraphics[width=.5\paperwidth]{../../dev/graphics/talk/transformation.pdf}}
   % \vspace*{\fill}
+
+  % \begin{alertblock}{Transformation Cases}
+    \begin{figure}[t]
+\centering
+   \begin{subfigure}{0.3\linewidth} \centering
+     \frame{\includegraphics[scale=0.2]{../../dev/graphics/talk/constant.pdf}}
+     \caption*{Constant $\alpha$}
+   \end{subfigure}
+%
+   \begin{subfigure}{0.3\linewidth} \centering
+     \frame{\includegraphics[scale=0.2]{../../dev/graphics/talk/linear.pdf}}
+     \caption*{Linear $\alpha$}
+   \end{subfigure}
+%
+   \begin{subfigure}{0.3\linewidth} \centering
+     \frame{\includegraphics[width=\linewidth]{../../dev/graphics/talk/recycled.pdf}}
+     \caption*{Recycled $\alpha$}
+   \end{subfigure}
+\end{figure}
+  % \end{alertblock}
+
+
 \end{frame}
 \note[itemize]{
 \item Transformation is the process where a cell incorporates a plasmid from its
 environment, translating any encoded genes
 \item Conjugation is horizontal transfer of a plasmid between two cells
-\item We assume transformation is the primary mechanism of plasmid transfer because
-we also assume that when a cell acquires a plasmid, it keeps it.
+\item We only pay attention to now for transformaton. We will investigate conjugation later.
+\item Describe physical meaning for each case. Constant is abundance of plasmids,
+linear is a dwindling population of plasmids. Recycled is the same, but with realism.
 }
 
+\begin{frame}{Population Dynamics Model - Constant}
+\begin{columns}
+  \begin{column}{.3\paperwidth}
+
+    \centerline{\textbf{Reactions}}
+    \begin{minipage}[c][.52\textheight][c]{\linewidth}
+
+      \begin{align*}
+        S & \stackrel{b_S}{\rightarrow} 2S \\
+        S & \stackrel{\alpha}{\rightarrow}  R \\
+        R & \stackrel{b_R}{\rightarrow} 2R \\
+        R & \stackrel{\delta}{\rightarrow} \varnothing
+      \end{align*}
+    \end{minipage}
+
+  \end{column} \vrule
+  \pause
+  \begin{column}{.6\paperwidth}
+    \centerline{\textbf{Equations}}
+    \begin{minipage}[c][.52\textheight][c]{\linewidth}
+  \begin{align*}
+    \frac{dS}{dt} & = b_S \left(1 - \frac{S + R}{K}\right)S - \alpha
+      \color{black} S \\[0.8ex]
+%
+    \frac{dR}{dt} & = b_R \left(1 - \frac{S + R}{K}\right)R + \alpha
+    \color{black} S - \delta R \\[0.8ex]
+%
+  \end{align*}
+\end{minipage}
+\end{column}
+\end{columns}
+\end{frame}
+\note{
+We can look to the simplest case of my simulation as a case study of this, and
+to understand in more depth how I'll be simulating these populations.
+}
 
 
 \section{Simulation}
@@ -113,11 +176,15 @@ we also assume that when a cell acquires a plasmid, it keeps it.
   \item Information about average behavior vs specific trajectories
   \item Individual realizations noisily follow model
   \end{itemize}
-  \vfill
+  \vspace{6mm}
   %TODO: Anderson's figure is a lot better - shows cases where a pop completely
   % dies off, i.e. where a certain trajectory has vastly different behavior even
   % in the limit of long time
-  \centerline{\includegraphics[width=.7\paperwidth]{../../dev/graphics/talk/trajectories.pdf}}
+  \centerline{\includegraphics[width=.6\paperwidth]{../../dev/graphics/talk/trajectories.pdf}}
+  \vspace{3mm}
+  \begin{equation*}
+    \frac{dS}{dt} =b_S\left(1-\frac{S+R}{K}\right)S
+  \end{equation*}
 \end{frame}
 \note[itemize]{
 \item At a very general level... More general discussion of models vs simulations
@@ -131,37 +198,249 @@ the discrete simulation, which model behavior of individual populations.
 \item Individual experiments noisily follow model
 }
 %TODO: Is the flow from the introduction of simulation into the population equations into the KMC good? Should I do KMC then DE?
-\begin{frame}{Simulation vs Modeling}
-
-  \begin{align}
-    \uncover<1->{&\text{Reaction} & \quad & R \stackrel{\delta}{\longrightarrow} \varnothing \\}
-    \uncover<2->{
-      &\text{Differential equation}&&\frac{dR}{dt} = - \delta R\\
-      &&& R(t) = R_0  e^{- \delta t} \\
-    }
-    \notag
-  \end{align}
-
-  % \vspace*{\fill}
-\end{frame}
-\note[itemize]{ %TODO: Fact check this with JJ
-%TODO: i'm repeating myself about the simulation vs model thing here \ No, I'm giving an example of what I mean
-\item This reaction describes a basic situation where a resistant cell dies with
-probability $\delta$.
-\item You can phrase this mathematically by writing the differential equation
-\item ... Which you can solve to find the exact solution for the population at any time
-\item Plotting this equation describes an exponential function that symptotically
-  approaches zero.
-\item However, implementing this reaction in simulation, this is not a smooth curve. This is a step-like function,
-  where for instance at some discrete time the population jumps from one to zero and goes extinct.
-}
+% \begin{frame}{Simulation vs Modeling}
+%
+%   \begin{align}
+%     \uncover<1->{&\text{Reaction} & \quad & R \stackrel{\delta}{\longrightarrow} \varnothing \\}
+%     \uncover<2->{
+%       &\text{Differential equation}&&\frac{dR}{dt} = - \delta R\\
+%       &&& R(t) = R_0  e^{- \delta t} \\
+%     }
+%     \notag
+%   \end{align}
+% \end{frame}
+% \note[itemize]{ %TODO: Fact check this with JJ
+% %TODO: i'm repeating myself about the simulation vs model thing here \ No, I'm giving an example of what I mean
+% \item This reaction describes a basic situation where a resistant cell dies with
+% probability $\delta$.
+% \item You can phrase this mathematically by writing the differential equation
+% \item ... Which you can solve to find the exact solution for the population at any time
+% \item Plotting this equation describes an exponential function that symptotically
+%   approaches zero.
+% \item However, implementing this reaction in simulation, this is not a smooth curve. This is a step-like function,
+%   where for instance at some discrete time the population jumps from one to zero and goes extinct.
+% }
 
 \subsection{Population Dynamics Model}
-\begin{frame}{Population Dynamics Model - %
-  \only<1-1>{Constant}%
-  \only<2-2>{\color{BurntOrange}Linear}%
-  \only<3-3>{\color{Purple}Recycled}}
+% \begin{frame}{Population Dynamics Model - %
+%   \only<1-1>{Constant}%
+%   \only<2-2>{\color{BurntOrange}Linear}%
+%   \only<3-3>{\color{Purple}Recycled}}
+%
+% \begin{columns}
+%   \begin{column}{.3\paperwidth}
+%
+%     \centerline{\textbf{Reactions}}
+%     \begin{minipage}[c][.52\textheight][c]{\linewidth}
+%
+%       \begin{align*}
+%         S & \stackrel{b_S}{\rightarrow} 2S \\
+%         S \only<2->{\color{BurntOrange}+ P_{free}\color{black}} & \stackrel{\alpha}{\rightarrow}  R \\
+%         R & \stackrel{b_R}{\rightarrow} 2R \\
+%         R & \stackrel{\delta}{\rightarrow} \varnothing \only<3->{\color{Purple} + P_{f} \color{black}}
+%       \end{align*}
+%     \end{minipage}
+%
+%   \end{column} \vrule
+%   \begin{column}{.6\paperwidth}
+%
+%     \centerline{\textbf{Equations}}
+%     \begin{minipage}[c][.52\textheight][c]{\linewidth}
+%   \begin{align*}
+%     \frac{dS}{dt} & = b_S \left(1 - \frac{S + R}{K}\right)S - \alpha
+%       \only<2->{ \color{BurntOrange}\left( \frac{P_{f}}{P} \right)}
+%       \color{black} S \\[0.8ex]
+% %
+%     \frac{dR}{dt} & = b_R \left(1 - \frac{S + R}{K}\right)R + \alpha
+%     \only<2->{\color{BurntOrange}\left( \frac{P_{f}}{P} \right)}
+%     \color{black} S - \delta R \\[0.8ex]
+% %
+%     \only<2->{\color{BurntOrange} \frac{dP_{f}}{dt} & \color{BurntOrange} = -\alpha \left( \frac{P_{f}}{P} \right) S}
+%     \only<3->{\color{Purple} + \delta R\\[0.8ex]
+% %
+%     \color{Purple}\frac{dP}{dt} & \color{Purple}= b_R \left( 1 - \frac{S + R}{K} \right) R}
+%   \end{align*}
+% \end{minipage}
+% \end{column}
+% \end{columns}
+%
+% \end{frame}
+% \note[itemize]{
+% \item For our research, we simulate three main cases, where the growth rates of
+% the populations vary according to different rules. They all build on each other in complexity.
+% \item The first case is the constant $\alpha$ case, where $\alpha$ is the
+% rate of transformation of resistant into susceptible. So, in this case, resistant
+% cells just transform at a fixed rate.
+% \item Describe reactions%TODO describe reactions %TODO: Should I talk about asymmetric vs symmetric?
+% \item In the second case, we now add a certain amount of plasmids to the
+% simulation, and only allow a cell to transform by consuming a plasmid. Most importantly,
+% we linearly scale the rate of transformation with the ratio of free plasmids to
+% initial plasmids.
+% \item In the third case, we build on the linear case by adding that whenever a
+% resistant cell dies, so a plasmid carrier, it releases a free plasmid back into
+% the environment.
+% }
+\section{Results}
+\subsection{Constant $\alpha$}
 
+\begin{frame}{Population Dynamics Model - Constant}
+  \begin{columns}
+    \begin{column}{.3\paperwidth}
+
+      \centerline{\textbf{Reactions}}
+      \begin{minipage}[c][.52\textheight][c]{\linewidth}
+
+        \begin{align*}
+          S & \stackrel{b_S}{\rightarrow} 2S \\
+          S & \stackrel{\alpha}{\rightarrow}  R \\
+          R & \stackrel{b_R}{\rightarrow} 2R \\
+          R & \stackrel{\delta}{\rightarrow} \varnothing
+        \end{align*}
+      \end{minipage}
+
+      \end{column} \vrule
+      \begin{column}{.6\paperwidth}
+
+        \centerline{\textbf{Equations}}
+        \begin{minipage}[c][.52\textheight][c]{\linewidth}
+          \begin{align*}
+            \frac{dS}{dt} & = b_S \left(1 - \frac{S + R}{K}\right)S - \alpha
+            \color{black} S \\[0.8ex]
+            %
+            \frac{dR}{dt} & = b_R \left(1 - \frac{S + R}{K}\right)R + \alpha
+            \color{black} S - \delta R \\[0.8ex]
+          \end{align*}
+        \end{minipage}
+      \end{column}
+    \end{columns}
+  \end{frame}
+
+\begin{frame}{Well-Mixed - Constant $\alpha$}
+  \vspace*{3mm}
+
+  \begin{columns}
+    \begin{column}{.5\paperwidth}
+        \includegraphics[width=.5\paperwidth]{../../dev/graphics/talk/constant_population.pdf}
+
+          \textbf{Parameters} \\
+          \begin{tabular}{l  r  c|c  l  r}
+            \toprule
+            $\alpha$ & .13 & \quad & \quad &
+              $\frac{b_S}{b_R}$ & 1.07 \\
+
+            $\delta$ & $.3$ & \quad & \quad &
+              $S_0$ & $10^3$ \\
+            $R_0$ & $10^3$ & \quad & \quad &
+              $K$ & $10^4$ \\
+              \bottomrule
+          \end{tabular}\\
+          \redc{5pt} Susceptible\\
+          \bluec{5pt}  Resistant
+    \end{column}
+    \pause
+    \vspace*{\fill}
+    \begin{column}{.4\paperwidth}
+      \centerline{\includegraphics[width=.4\paperwidth]{../../dev/graphics/talk/const_contour.pdf}} %TODO: LABEL Z AXIS
+    \end{column}
+\end{columns}
+\end{frame}
+\note[itemize]{
+\item Red line is where populations break even
+\item Here we can see the system falls into a steady state
+\item Contour plot shows after some empirically determined burn-in time has
+elapsed, which population dominates
+\item In constant case, difference in population dominance is largely due to rate
+of transformation, which acts as an additional growth and death term, growth
+rates, and death rate. Growth freezes when total population reaches carrying capacity
+}
+
+
+
+\subsection{Linear $\alpha$}
+
+\begin{frame}{Population Dynamics Model - \color{BurntOrange}Linear}
+  \begin{columns}
+    \begin{column}{.3\paperwidth}
+      \centerline{\textbf{Reactions}}
+      \begin{minipage}[c][.52\textheight][c]{\linewidth}
+        \begin{align*}
+          S & \stackrel{b_S}{\rightarrow} 2S \\
+          S \color{BurntOrange}+ P_{free}\color{black} & \stackrel{\alpha}{\rightarrow}  R \\
+          R & \stackrel{b_R}{\rightarrow} 2R \\
+          R & \stackrel{\delta}{\rightarrow} \varnothing
+        \end{align*}
+      \end{minipage}
+    \end{column} \vrule
+
+    \begin{column}{.6\paperwidth}
+        \centerline{\textbf{Equations}}
+        \begin{minipage}[c][.52\textheight][c]{\linewidth}
+      \begin{align*}
+    %
+        \frac{dS}{dt} & = b_S \left(1 - \frac{S + R}{K}\right)S - \alpha
+          \color{BurntOrange}\left( \frac{P_{f}}{P} \right)
+          \color{black} S \\[0.8ex]
+    %
+        \frac{dR}{dt} & = b_R \left(1 - \frac{S + R}{K}\right)R + \alpha
+        \color{BurntOrange}\left( \frac{P_{f}}{P} \right)
+        \color{black} S - \delta R \\[0.8ex]
+    %
+        \color{BurntOrange} \frac{dP_{f}}{dt} & \color{BurntOrange} = -\alpha \left( \frac{P_{f}}{P} \right) S\\[0.8ex]
+    %
+        \color{BurntOrange}\frac{dP}{dt} & \color{BurntOrange}= b_R \left( 1 - \frac{S + R}{K} \right) R
+        \end{align*}
+    \end{minipage}
+  \end{column}
+  \end{columns}
+\end{frame}
+\begin{frame}{Well-Mixed - Linear $\alpha$}
+  \vspace*{3mm}
+
+  \begin{columns}
+    \begin{column}{.5\paperwidth}
+        \includegraphics[width=.5\paperwidth]{../../dev/graphics/talk/linear_population.pdf}
+
+        \textbf{Parameters} \\
+        \begin{tabular}{l  r  c|c  l  r}
+          \toprule
+          $\alpha$ & .13 & \quad & \quad &
+            $\frac{b_S}{b_R}$ & 1.07 \\
+
+          $\delta$ & $.3$ & \quad & \quad &
+            $S_0$ & $10^3$ \\
+          $R_0$ & $10^3$ & \quad & \quad &
+            $K$ & $10^4$ \\
+          $P_0$ & $10^4$ &&&&\\
+          \bottomrule
+          \end{tabular}\\
+
+          \redc{5pt}  Susceptible\\
+          \bluec{5pt}  Resistant
+    \end{column}
+
+    \pause
+    \vspace*{\fill}
+    \begin{column}{.4\paperwidth}
+      \centerline{\includegraphics[width=.4\paperwidth]{../../dev/graphics/talk/linear_contour.pdf}} %TODO: LABEL Z AXIS
+    \end{column}
+\end{columns}
+\end{frame}
+\note[itemize]{
+\item Reiterate rules
+\item Most dynamic case
+\item Susceptible population slows down as R booms, but when all plasmids are exhausted
+R dies off and S dominates. %TODO: Add plot of plasmid population here
+\item Shows the most dependence on the ratio of growth rates, angled line in contour
+\item Break even point shifts WAY right, S dominates except for VERY high alphas,
+where the R population grows fast enough before plasmids are exhausted that it
+can hit the carrying capacity.
+}
+
+
+
+
+\subsection{Recycled $\alpha$}
+\begin{frame}{Population Dynamics Model - \color{Purple}Recycled}
 \begin{columns}
   \begin{column}{.3\paperwidth}
 
@@ -170,9 +449,9 @@ probability $\delta$.
 
       \begin{align*}
         S & \stackrel{b_S}{\rightarrow} 2S \\
-        S \only<2->{\color{BurntOrange}+ P_{free}\color{black}} & \stackrel{\alpha}{\rightarrow}  R \\
+        S \color{BurntOrange}+ P_{free}\color{black} & \stackrel{\alpha}{\rightarrow}  R \\
         R & \stackrel{b_R}{\rightarrow} 2R \\
-        R & \stackrel{\delta}{\rightarrow} \varnothing \only<3->{\color{Purple} + P_{f} \color{black}}
+        R & \stackrel{\delta}{\rightarrow} \varnothing \color{Purple} + P_{free} \color{black}
       \end{align*}
     \end{minipage}
 
@@ -183,42 +462,59 @@ probability $\delta$.
     \begin{minipage}[c][.52\textheight][c]{\linewidth}
   \begin{align*}
     \frac{dS}{dt} & = b_S \left(1 - \frac{S + R}{K}\right)S - \alpha
-      \only<2->{ \color{BurntOrange}\left( \frac{P_{f}}{P} \right)}
+      \color{BurntOrange}\left( \frac{P_{f}}{P} \right)
       \color{black} S \\[0.8ex]
 %
     \frac{dR}{dt} & = b_R \left(1 - \frac{S + R}{K}\right)R + \alpha
-    \only<2->{\color{BurntOrange}\left( \frac{P_{f}}{P} \right)}
+    \color{BurntOrange}\left( \frac{P_{f}}{P} \right)
     \color{black} S - \delta R \\[0.8ex]
 %
-    \only<2->{\color{BurntOrange} \frac{dP_{f}}{dt} & \color{BurntOrange} = -\alpha \left( \frac{P_{f}}{P} \right) S}
-    \only<3->{\color{Purple} + \delta R\\[0.8ex]
+    \color{BurntOrange} \frac{dP_{f}}{dt} & \color{BurntOrange} = -\alpha \left( \frac{P_{f}}{P} \right) S
+    \color{Purple} + \delta R\\[0.8ex]
 %
-    \color{Purple}\frac{dP}{dt} & \color{Purple}= b_R \left( 1 - \frac{S + R}{K} \right) R}
+    \color{BurntOrange}\frac{dP}{dt} & \color{BurntOrange}= b_R \left( 1 - \frac{S + R}{K} \right) R
   \end{align*}
 \end{minipage}
 \end{column}
 \end{columns}
-
 \end{frame}
-\note[itemize]{
-\item For our research, we simulate three main cases, where the growth rates of
-the populations vary according to different rules. They all build on each other in complexity.
-\item The first case is the constant $\alpha$ case, where $\alpha$ is the
-rate of transformation of resistant into susceptible. So, in this case, resistant
-cells just transform at a fixed rate.
-\item Describe reactions%TODO describe reactions %TODO: Should I talk about asymmetric vs symmetric?
-\item In the second case, we now add a certain amount of plasmids to the
-simulation, and only allow a cell to transform by consuming a plasmid. Most importantly,
-we linearly scale the rate of transformation with the ratio of free plasmids to
-initial plasmids.
-\item In the third case, we build on the linear case by adding that whenever a
-resistant cell dies, so a plasmid carrier, it releases a free plasmid back into
-the environment.
-}
+
+\begin{frame}{Well-Mixed - Recycled $\alpha$}
+  \vspace*{3mm}
+
+  \begin{columns}
+    \begin{column}{.5\paperwidth}
+        \includegraphics[width=.5\paperwidth]{../../dev/graphics/talk/recycled_population.pdf}
+
+        \textbf{Parameters} \\
+        \begin{tabular}{l  r  c|c  l  r}
+          \toprule
+          $\alpha$ & .13 & \quad & \quad &
+          $\frac{b_S}{b_R}$ & 1.07 \\
+          $\delta$ & $.3$ & \quad & \quad &
+          $R_0$ & $10^3$ \\
+          $S_0$ & $10^3$ & \quad & \quad &
+          $K$ & $10^4$ \\
+          $P_0$ & $10^4$\\
+          \bottomrule
+          \end{tabular}\\
+
+          \bluec{5pt}  Resistant
+          \redc{5pt}  Susceptible\\
+          \vfill
+    \end{column}
+
+    \pause
+
+    \vspace*{\fill}
+    \begin{column}{.4\paperwidth}
+      \centerline{\includegraphics[width=.4\paperwidth]{../../dev/graphics/talk/recycled_contour.pdf}} %TODO: LABEL Z AXIS
+    \end{column}
+\end{columns}
+\end{frame}
 
 
-\subsection{Simulation Methods}
-
+% \subsection{Simulation Methods}
 
 \begin{frame}{Kinetic Monte Carlo Method}
   \begin{itemize}
@@ -235,13 +531,17 @@ the environment.
 \note[itemize]{
 \item The kinetic monte carlo method, or the Gillespie Algorithm, was originally
 developed to simulate stochastic chemical reactions. %TODO: This part feels like it would be better above
-\item KMC is agnostic to what you're actually simulating, just cares about rates
+\item If any of you remember, yesterday in her talk Payton mentioned a parameter that had to be tweaked
+in simulation in order to get the simulation to properly account for simulating bacteria instead
+of a chemical reaction. What's nice about KMC is that it's agnostic to what you're actually simulating, just cares about rates
 \item %TODO: Do I even want to say the part about capturing the dynamics?
 \item Time scale of a KMC step is not fixed and scales with number of reagents being
 simulated. This is cool because as the system grows, and has more particles,
 and therefore more frequent interactions, the time step gets shorter. This
 simulates more reactions in the same amount of time. Conversely, the time step
-will lengthen as the system shrinks.
+will lengthen as the system shrinks.}
+\newpage
+\note[itemize]{
 \item Basic algorithm: Calculate likelihood of reaction happening, given size
 of system, rates, and number of particles of each type. Use that probability
 distribution to randomly select one. Choose a random timestep length from an
@@ -262,187 +562,142 @@ Carry out the reaction, updating the simulation with the result of the reaction.
   \end{itemize}
 
 \end{frame}
-\begin{frame}{Simulation Detailed (cont'd)}
 
-  Well-Mixed Case
-  \begin{itemize}
-    \item System-wide carrying capacity
-    \item Most closely follows the model
-  \end{itemize}
 
-  Lattice Case
-  \begin{itemize}
-    \item Clustering
-    \item Discrete sites with per-site carrying capacity
-  \end{itemize}
-\end{frame}
-\note[itemize]{
-\item%TODO: Add notes for this!
-}
+% \begin{frame}{Simulation Details (cont'd)}
+%
+%   Well-Mixed Case
+%   \begin{itemize}
+%     \item System-wide carrying capacity
+%     \item Most closely follows the model
+%   \end{itemize}
+%
+%   Lattice Case
+%   \begin{itemize}
+%     \item Clustering
+%     \item Discrete sites with per-site carrying capacity
+%   \end{itemize}
+% \end{frame}
+% \note[itemize]{
+% \item%TODO: Add notes for this!
+% }
 
 % \begin{frame}{Lattice}
 % \end{frame}
 
-\begin{frame}[fragile]{Optimizations}
-  \begin{itemize}
-    \item Occupancy lists
-    \item Sets vs. lists
-    \item \verb|imshow| vs. \verb|plcolor| %TODO: Does anyone care about this?
-  \end{itemize}
-\end{frame}
-\note[itemize]{
-\item When implemented for a lattice, the KMC algorithm goes pick a reaction THEN pick
-a random site. So, we have to know which sites actually have the reagents necessary
-for that reaction. Instead of searching through the whole lattice, which is very
-slow, I just track a list of sites occupied by each type of particle. Then I can
-just randomly pick from the appropriate list.
+% \begin{frame}[fragile]{Optimizations}
+%   \begin{itemize}
+%     \item Occupancy lists
+%     \item Sets vs. lists
+%     \item \verb|imshow| vs. \verb|plcolor| %TODO: Does anyone care about this?
+%     \item Parallelization
+%   \end{itemize}
+% \end{frame}
+% \note[itemize]{
+% \item When implemented for a lattice, the KMC algorithm goes pick a reaction THEN pick
+% a random site. So, we have to know which sites actually have the reagents necessary
+% for that reaction. Instead of searching through the whole lattice, which is very
+% slow, I just track a list of sites occupied by each type of particle. Then I can
+% just randomly pick from the right list.
+%
+% \item Sometimes it's hard to avoid searching through the array. For instance
+% when a transformation reaction happens, I need a site that's occupied by both
+% an S and a P. In order to get a list of those, I have to check which lattice sites
+% exist in both lists. However, that's a very slow operation. The way python
+% implements lists under the hood means that the time it takes to do that increases
+% with the square of the length of the lists, or the square of the lattice dimensions.
+% I use something called sets instead of lists, which are implemented in such a way
+% that the time it takes to do that same operation just goes linearly with the length
+% of the lists. (20x speedup with a small lattice)}
+%
+% \newpage
+% \note[itemize]{
+%
+% \item plcolor and imshow are two ways of plotting, pcolor makes a whole array
+% of small squares where imshow just makes a picture. pcolor can look slightly
+% better but is orders of magnitude slower.
+%
+% \item When running many simultaneous, independent runs (i.e. for statistical
+% analysis), each run can be run on its own core, or processor, in the computer. This
+% gives a linear speedup proportional to number of processors available -- on even a basic computer
+% like my laptop, this resulted in an 8x speedup. On the linux cluster, we have hundreds
+% of cores available.
+% }
 
-\item Sometimes it's hard to avoid searching through the array. For instance
-when a transformation reaction happens, I need a site that's occupied by both
-an S and a P. In order to get a list of those, I have to check which lattice sites
-exist in both lists. However, that's a very slow operation. The way python
-implements lists under the hood means that the time it takes to do that increases
-with the square of the length of the lists, or the square of the lattice dimensions.
-I use something called sets instead of lists, which are implemented in such a way
-that the time it takes to do that same operation just goes linearly with the length
-of the lists. (20x speedup with a small lattice)
-
-\item plcolor and imshow are two ways of plotting, pcolor makes a whole array
-of small squares where imshow just makes a picture. pcolor can look slightly
-better but is orders of magnitude slower.
-}
-
-
-
-
-\section{Results}
-\subsection{Well-Mixed}
-\begin{frame}{Constant $\alpha$}
-  \vspace*{3mm}
-  \centerline{\includegraphics[width=.4\paperwidth]{../../dev/graphics/talk/const_contour.pdf}} %TODO: LABEL Z AXIS
-
-  \begin{columns}
-    \begin{column}{.5\paperwidth}
-        \includegraphics[width=.5\paperwidth]{../../dev/graphics/talk/constant_population.pdf}
-    \end{column}
-
-    \vspace*{\fill}
-    \begin{column}{.4\paperwidth}
-      \textbf{Parameters} \\
-      \begin{tabular}{l  r  c|c  l  r}
-        \toprule
-        $\alpha$ & .13 & \quad & \quad &
-          $\frac{b_S}{b_R}$ & 1.07 \\
-        $S_0$ & $10^3$ & \quad & \quad &
-          $R_0$ & $10^3$ \\
-        $P_0$ & $10^4$ & \quad & \quad &
-          $K$ & $10^4$ \\
-          \bottomrule
-      \end{tabular}\\
-
-      \redc{5pt}  Susceptible\\
-      \bluec{5pt}  Resistant
-    \end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Linear $\alpha$}
-  \vspace*{3mm}
-  \centerline{\includegraphics[width=.4\paperwidth]{../../dev/graphics/talk/linear_contour.pdf}} %TODO: LABEL Z AXIS
-
-  \begin{columns}
-    \begin{column}{.5\paperwidth}
-        \includegraphics[width=.5\paperwidth]{../../dev/graphics/talk/linear_population.pdf}
-    \end{column}
-
-    \vspace*{\fill}
-    \begin{column}{.4\paperwidth}
-      \textbf{Parameters} \\
-      \begin{tabular}{l  r  c|c  l  r}
-        \toprule
-        $\alpha$ & .3 & \quad & \quad &
-          $\frac{b_S}{b_R}$ & 1.07 \\
-        $S_0$ & $10^3$ & \quad & \quad &
-          $R_0$ & $10^3$ \\
-        $P_0$ & $10^4$ & \quad & \quad &
-          $K$ & $10^4$ \\
-          \bottomrule
-      \end{tabular}\\
-
-      \redc{5pt}  Susceptible\\
-      \bluec{5pt}  Resistant
-    \end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Recycled $\alpha$}
-  \vspace*{3mm}
-  \centerline{\includegraphics[width=.4\paperwidth]{../../dev/graphics/talk/recycled_contour.pdf}} %TODO: LABEL Z AXIS
-
-  \begin{columns}
-    \begin{column}{.5\paperwidth}
-        \includegraphics[width=.5\paperwidth]{../../dev/graphics/talk/recycled_population.pdf}
-    \end{column}
-
-    \vspace*{\fill}
-    \begin{column}{.4\paperwidth}
-      \textbf{Parameters} \\
-      \begin{tabular}{l  r  c|c  l  r}
-        \toprule
-        $\alpha$ & .13 & \quad & \quad &
-          $\frac{b_S}{b_R}$ & 1.07 \\
-        $S_0$ & $10^3$ & \quad & \quad &
-          $R_0$ & $10^3$ \\
-        $P_0$ & $10^4$ & \quad & \quad &
-          $K$ & $10^4$ \\
-          \bottomrule
-      \end{tabular}\\
-
-      \redc{5pt}  Susceptible\\
-      \bluec{5pt}  Resistant
-      \vfill
-    \end{column}
-\end{columns}
-\end{frame}
-
-\subsection{Lattice}
+% \subsection{Lattice}
 %TODO: What results do I want to show for the lattice?
 % Show lattice plots vs model, and show huge differences.
 
 
 \section{Conclusions}
 \begin{frame}{Conclusions}
-  \begin{alertblock}{What most heavily affects R or S dominance?}
-    \begin{itemize}
-      \item Transition point heavily dependent on $\alpha$
-      \item Little growth rate dependence, except linear case
-      % \item
-    \end{itemize}
-  \end{alertblock}
 
+    \begin{alertblock}{Question}
+      What conditions lead to emergence of antibiotic resistance?
+    \end{alertblock}
+
+  % \begin{alertblock}{What most heavily affects R or S dominance?}
+    \begin{itemize}
+      \item Transition point where population dominance switches
+      \item Transition point heavily dependent on $\alpha$ mechanism, not growth rate ratio
+      \item Little growth rate dependence, except linear case
+      \item Linear case tends to population extinction, with interesting dynamics in between
+    \end{itemize}
+  % \end{alertblock}
 \end{frame}
+\note[itemize]{
+\item This is all for the well-mixed case! %TODO: Is any of this repetitive?
+}
+
 
 %TODO: What other future work?
-\begin{frame}{Future Work}
+\begin{frame}{Ongoing Work}
+
   \begin{itemize}
-    \item Larger lattice simulations
+    \item Continue gathering lattice data
+    \item Simulate larger lattices
+  \end{itemize}
+
+  \textbf{Future Work}
+  \begin{itemize}
+    \item Incorporate diffusion
+    \item Add conjugation reaction
     \item Simulate antibiotic dosing
-    \item Incorporate diffusion reaction
   \end{itemize}
 
 \end{frame}
 
-%TODO: More? Move JJ from title to here? Which is appropriate
-\begin{frame}{Acknowledgements}
-Department of Physics and Astronomy, Bucknell University
+\begin{frame}[fragile]{Questions?}
 
-NSF-DMR \#1248387
+  \textbf{Acknowledgments}
 
-\vfill
-\end{frame}
+  \begin{itemize}
+    \item Department of Physics and Astronomy, Bucknell University
+    \item NSF-DMR \#1248387
+    \item Sandy!
+  \end{itemize}
 
-\begin{frame}[standout]
-  Questions?
+  \begin{columns}
+    \begin{column}{.5\linewidth}
+      \vspace{5mm}
+
+    \begin{alertblock}{Optimizations}
+    \begin{itemize}
+      \item Occupancy lists
+      \item Sets vs. lists
+      \item \verb|imshow| vs. \verb|plcolor| %TODO: Does anyone care about this?
+      \item Parallelization
+    \end{itemize}
+  \end{alertblock}
+  \end{column}
+  \begin{column}{.5\linewidth}
+    \textbf{Lattice Results}
+
+    \vspace{5mm}
+    \animategraphics[autoplay,loop,width=\linewidth]{12}{../../dev/animations/big-}{0}{10}
+    % \animategraphics[autoplay,loop,width=\linewidth]{12}{../../dev/animations/big-}{0}{49}
+  \end{column}
+  \end{columns}
 \end{frame}
 
 
@@ -461,7 +716,52 @@ NSF-DMR \#1248387
   \end{enumerate}
 \end{frame}
 
-\begin{frame}[allowframebreaks]{References}
+\begin{frame}{Mapping Simulation Time to Realtime}
+  \begin{equation*}
+    \frac{dS}{dt} = b_S S
+  \end{equation*}
+
+  \begin{align*}
+    S(t) &= S_0 e^{b_S t} \\
+    &= S_0 e^{\ln2 t / \tau}
+  \end{align*}
+
+  \begin{align*}
+    b_S  &= \ln 2 / \tau \\
+    \tau &= \ln 2 / b_S \\
+  \end{align*}
 \end{frame}
+\note{
+$\tau$ is the characteristic timescale for the simulation, in term of generations.
+Map this to realtime by multiplying by the doubling time.
+}
+
+\begin{frame}{Lattice Simulation Results}
+
+  \textbf{Sharp Transition}
+  \vfill
+  \animategraphics[autoplay,loop,width=\linewidth]{12}{../../dev/animations/apop-}{0}{99}
+  % \animategraphics[autoplay,loop,width=\linewidth]{12}{../../dev/animations/apop-}{0}{10}
+\end{frame}
+
+
+\begin{frame}{Lattice Simulation Results}
+
+  \textbf{Long Run}
+  \vfill
+  \animategraphics[autoplay,loop,width=\linewidth]{12}{../../dev/animations/long-}{0}{149}
+  % \animategraphics[autoplay,loop,width=\linewidth]{12}{../../dev/animations/long-}{0}{10}
+\end{frame}
+
+\begin{frame}{Lattice Simulation Results}
+
+  \textbf{Large Lattice}
+  \vfill
+  \animategraphics[autoplay,loop,width=\linewidth]{12}{../../dev/animations/big-}{0}{49}
+  % \animategraphics[autoplay,loop,width=\linewidth]{12}{../../dev/animations/big-}{0}{10}
+\end{frame}
+
+% \begin{frame}[allowframebreaks]{References}
+% \end{frame}
 
 \end{document}
