@@ -251,13 +251,18 @@ Carry out the reaction, updating the simulation with the result of the reaction.
 
 %TODO: Well-Mixed "what"? Simulation? Case? Regime?
 %TODO: Need to say more here about the two
-\begin{frame}{Simulation Parameters}
+\begin{frame}{Simulation Details}
 
   \begin{itemize}
-    \item Slower plasmid carrier growth rate %TODO: This phrasing sucks
+    \item Slower plasmid carrier growth rate
     \item Carrying capacity
+    \item Periodic boundary conditions
     \item Fixed death rate
+    \item Mapping simulation time to real time%TODO: Write out what I want to say about mapping sim time to real time!
   \end{itemize}
+
+\end{frame}
+\begin{frame}{Simulation Detailed (cont'd)}
 
   Well-Mixed Case
   \begin{itemize}
@@ -271,19 +276,40 @@ Carry out the reaction, updating the simulation with the result of the reaction.
     \item Discrete sites with per-site carrying capacity
   \end{itemize}
 \end{frame}
+\note[itemize]{
+\item%TODO: Add notes for this!
+}
 
-\begin{frame}{Lattice}
-\end{frame}
+% \begin{frame}{Lattice}
+% \end{frame}
 
 \begin{frame}[fragile]{Optimizations}
   \begin{itemize}
-    \item Sets vs. lists
     \item Occupancy lists
+    \item Sets vs. lists
     \item \verb|imshow| vs. \verb|plcolor| %TODO: Does anyone care about this?
-    \item Mapping simulation time to real time
   \end{itemize}
 \end{frame}
-\note{%TODO: Write out what I want to say about mapping sim time to real time!
+\note[itemize]{
+\item When implemented for a lattice, the KMC algorithm goes pick a reaction THEN pick
+a random site. So, we have to know which sites actually have the reagents necessary
+for that reaction. Instead of searching through the whole lattice, which is very
+slow, I just track a list of sites occupied by each type of particle. Then I can
+just randomly pick from the appropriate list.
+
+\item Sometimes it's hard to avoid searching through the array. For instance
+when a transformation reaction happens, I need a site that's occupied by both
+an S and a P. In order to get a list of those, I have to check which lattice sites
+exist in both lists. However, that's a very slow operation. The way python
+implements lists under the hood means that the time it takes to do that increases
+with the square of the length of the lists, or the square of the lattice dimensions.
+I use something called sets instead of lists, which are implemented in such a way
+that the time it takes to do that same operation just goes linearly with the length
+of the lists. (20x speedup with a small lattice)
+
+\item plcolor and imshow are two ways of plotting, pcolor makes a whole array
+of small squares where imshow just makes a picture. pcolor can look slightly
+better but is orders of magnitude slower.
 }
 
 
@@ -399,6 +425,8 @@ Carry out the reaction, updating the simulation with the result of the reaction.
 %TODO: What other future work?
 \begin{frame}{Future Work}
   \begin{itemize}
+    \item Larger lattice simulations
+    \item Simulate antibiotic dosing
     \item Incorporate diffusion reaction
   \end{itemize}
 
@@ -411,10 +439,6 @@ Department of Physics and Astronomy, Bucknell University
 NSF-DMR \#1248387
 
 \vfill
-% \vspace{10mm}
-\textbf{References}
-% \bibliography{bibliography}
-% \bibliographystyle{plain}
 \end{frame}
 
 \begin{frame}[standout]
@@ -424,7 +448,7 @@ NSF-DMR \#1248387
 
 \appendix
 
-\begin{frame}{Gillespie Algorithm }
+\begin{frame}{Gillespie Algorithm \footfullcite{rieger}}
   \begin{enumerate}
     \item Initialize simulation
     \item Calculate propensity $a$ for each reaction
@@ -434,7 +458,6 @@ NSF-DMR \#1248387
       $$\text{P}(\tau)=\left(\sum_i a_i\right) \cdot \exp{\left(-\tau \sum_i ai\right)}$$
     \item Update populations with results of reaction
     \item Go to Step 2
-    \footfullcite{rieger}
   \end{enumerate}
 \end{frame}
 
